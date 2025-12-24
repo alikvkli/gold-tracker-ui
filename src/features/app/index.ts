@@ -7,6 +7,7 @@ const initialState: InitialStateProps = {
     token: null,
     user: null,
     encryptionKey: null,
+    dateFormat: 'standard',
 }
 
 const appSlice = createSlice({
@@ -27,6 +28,9 @@ const appSlice = createSlice({
         setEncryptionKey: (state, action: PayloadAction<string | null>) => {
             state.encryptionKey = action.payload;
         },
+        setDateFormat: (state, action: PayloadAction<'relative' | 'standard'>) => {
+            state.dateFormat = action.payload;
+        },
     }
 })
 
@@ -34,6 +38,7 @@ export const {
     setLogin,
     logout,
     setEncryptionKey,
+    setDateFormat,
 } = appSlice.actions;
 
 export default appSlice.reducer;

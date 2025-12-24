@@ -30,6 +30,7 @@ import { logout, setEncryptionKey } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import api from '@/lib/api';
+import { formatDate } from '@/lib/date';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 
@@ -71,7 +72,7 @@ const AssetsPage: React.FC = () => {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    const { user, encryptionKey } = useAppSelector(state => state.app);
+    const { user, encryptionKey, dateFormat } = useAppSelector(state => state.app);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -295,7 +296,7 @@ const AssetsPage: React.FC = () => {
                                                     <div>
                                                         <p className="font-bold text-sm">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
                                                         <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
-                                                            <Calendar className="w-3 h-3" /> {asset.date}
+                                                            <Calendar className="w-3 h-3" /> {formatDate(asset.date, dateFormat)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -383,8 +384,7 @@ const AssetsPage: React.FC = () => {
                     <div className="text-sm">
                         <p className="font-bold text-amber-500 mb-1">Şifreleme Hakkında Not</p>
                         <p className="text-zinc-500 leading-relaxed">
-                            Eğer hesabınızda anonimleşme/şifreleme açık ise, varlıklarınızı görebilmek için profil sayfanızdan şifreleme anahtarınızı doğrulamanız gerekmektedir.
-                            Şifreleme anahtarı doğrulandığında `X-Encryption-Key` başlığı otomatik olarak tüm isteklere eklenecektir.
+                            Varlıklarınızın gizliliği için şifreleme özelliğini kullanıyorsanız, verilerinize güvenli bir şekilde erişebilmek için profil sayfanızdan şifreleme anahtarınızı doğrulamanız gerekmektedir. Doğrulama yapıldıktan sonra tüm verileriniz otomatik olarak görünür hale gelecektir.
                         </p>
                     </div>
                 </div>

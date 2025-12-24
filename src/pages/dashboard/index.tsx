@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks';
 import { logout } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import api from '@/lib/api';
+import { formatDate } from '@/lib/date';
 
 interface Currency {
     id: number;
@@ -20,7 +21,7 @@ interface Currency {
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { user } = useAppSelector(state => state.app);
+    const { user, dateFormat } = useAppSelector(state => state.app);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -145,7 +146,7 @@ const DashboardPage: React.FC = () => {
                                         <p className="text-zinc-400 text-xs font-medium mb-1 truncate">{cur.name}</p>
                                         <div className="flex flex-col">
                                             <span className="text-xl font-bold tracking-tighter">₺{parseFloat(cur.selling).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
-                                            <span className="text-[10px] text-zinc-600 font-mono mt-1">{cur.last_updated_at}</span>
+                                            <span className="text-[10px] text-zinc-600 font-mono mt-1">{formatDate(cur.last_updated_at, dateFormat)}</span>
                                         </div>
                                     </div>
                                 ))}

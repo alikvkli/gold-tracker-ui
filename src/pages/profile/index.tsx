@@ -12,7 +12,9 @@ import {
     LogOut,
     KeyRound,
     Eye,
-    EyeOff
+    EyeOff,
+    Calendar,
+    Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -20,7 +22,7 @@ import * as Yup from 'yup';
 
 import { PATHS } from '@/routes/paths';
 import { useAppDispatch, useAppSelector } from '@/hooks';
-import { logout, setEncryptionKey, setLogin } from '@/features/app';
+import { logout, setEncryptionKey, setLogin, setDateFormat } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import api from '@/lib/api';
 import Button from '@/components/Button';
@@ -29,7 +31,7 @@ import Input from '@/components/Input';
 const ProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { user, encryptionKey, token } = useAppSelector(state => state.app);
+    const { user, encryptionKey, token, dateFormat } = useAppSelector(state => state.app);
 
     const [showKey, setShowKey] = useState(false);
     const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
@@ -201,6 +203,42 @@ const ProfilePage: React.FC = () => {
                                     Şifreyi Güncelle
                                 </Button>
                             </form>
+                        </section>
+
+                        {/* Appearance Settings */}
+                        <section className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+                            <h4 className="text-lg font-bold flex items-center gap-2 mb-6">
+                                <Zap className="w-5 h-5 text-amber-500" /> Görünüm Ayarları
+                            </h4>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="text-sm font-bold text-zinc-500 px-1 uppercase tracking-widest block mb-4">Tarih Gösterimi</label>
+                                    <div className="grid grid-cols-2 gap-4 p-1 bg-zinc-950 border border-white/5 rounded-2xl">
+                                        <button
+                                            onClick={() => dispatch(setDateFormat('relative'))}
+                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${dateFormat === 'relative'
+                                                ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
+                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                                }`}
+                                        >
+                                            <Zap className="w-4 h-4" /> Dinamik
+                                        </button>
+                                        <button
+                                            onClick={() => dispatch(setDateFormat('standard'))}
+                                            className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${dateFormat === 'standard'
+                                                ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
+                                                : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                                }`}
+                                        >
+                                            <Calendar className="w-4 h-4" /> Standart
+                                        </button>
+                                    </div>
+                                    <p className="mt-3 text-xs text-zinc-600 px-1 italic">
+                                        * Örn: "{dateFormat === 'relative' ? '5 dakika önce' : '24.12.2025 07:35'}"
+                                    </p>
+                                </div>
+                            </div>
                         </section>
                     </div>
 

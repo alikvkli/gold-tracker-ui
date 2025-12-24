@@ -12,4 +12,5 @@ export interface InitialStateProps {
     token: string | null;
     user: User | null;
     encryptionKey: string | null;
+    dateFormat: 'relative' | 'standard';
 }
