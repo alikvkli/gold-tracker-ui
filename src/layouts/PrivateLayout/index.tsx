@@ -1,6 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAppSelector } from "../../hooks";
 import { PATHS } from "../../routes/paths";
+import Sidebar from "@/components/Navigation/Sidebar";
+import BottomNav from "@/components/Navigation/BottomNav";
 
 export default function PrivateLayout() {
     const { login } = useAppSelector(state => state.app);
@@ -9,5 +11,13 @@ export default function PrivateLayout() {
         return <Navigate to={PATHS.LOGIN} replace />;
     }
 
-    return <Outlet />;
+    return (
+        <div className="flex min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500/30">
+            <Sidebar />
+            <main className="flex-1 lg:ml-72 pb-32 lg:pb-12 pt-8 px-6 lg:px-12 max-w-[1600px] mx-auto w-full transition-all">
+                <Outlet />
+            </main>
+            <BottomNav />
+        </div>
+    );
 }

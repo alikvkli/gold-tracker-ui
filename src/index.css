@@ -9,4 +9,10 @@
     body {
         font-family: "Ubuntu", sans-serif;
     }
+
+    /* Invert date picker icon for dark mode */
+    ::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+    }
 }

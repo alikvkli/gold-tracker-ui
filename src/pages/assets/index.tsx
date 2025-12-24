@@ -3,12 +3,6 @@ import {
     History,
     Plus,
     Trash2,
-    Coins,
-    LayoutDashboard,
-    User as UserIcon,
-    LogOut,
-    ChevronLeft,
-    ChevronRight,
     Loader2,
     Calendar,
     TrendingUp,
@@ -19,18 +13,21 @@ import {
     Banknote,
     MapPin,
     StickyNote,
-    Shield
+    Shield,
+    ChevronLeft,
+    ChevronRight,
+    Coins
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 import { PATHS } from '@/routes/paths';
-import { logout, setEncryptionKey } from '@/features/app';
+import { setEncryptionKey } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import api from '@/lib/api';
-import { formatDate } from '@/lib/date';
+import { formatDate, formatNumericValue, parseNumericValue } from '@/lib/date';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 
@@ -47,6 +44,7 @@ interface Asset {
         id: number;
         name: string;
         code: string;
+        type: string;
     }
 }
 
@@ -54,6 +52,7 @@ interface Currency {
     id: number;
     code: string;
     name: string;
+    type: string;
     buying: string;
     selling: string;
 }
@@ -80,6 +79,9 @@ const AssetsPage: React.FC = () => {
     const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
     const [securityKey, setSecurityKey] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
+    const [selectedAssetType, setSelectedAssetType] = useState<'Altın' | 'Döviz'>('Altın');
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [assetToDelete, setAssetToDelete] = useState<number | null>(null);
 
     const fetchAssets = async (pageNum: number) => {
         setIsLoading(true);
@@ -97,11 +99,10 @@ const AssetsPage: React.FC = () => {
 
     const fetchCurrencies = async () => {
         try {
-            const response = await api.get('/currencies'); // Simplified currency list
+            const response = await api.get('/currencies');
             setCurrencies(response.data);
         } catch (error) {
             console.error('Kurlar alınırken hata oluştu:', error);
-            dispatch(addToast({ message: 'Kur bilgileri yüklenemedi.', type: 'error' }));
         }
     };
 
@@ -121,17 +122,13 @@ const AssetsPage: React.FC = () => {
 
         setIsVerifying(true);
         try {
-            // Test the key by making a request to the assets endpoint
             await api.get('/assets?page=1', {
                 headers: { 'X-Encryption-Key': securityKey }
             });
-
-            // If successful, save the key and close the modal
             dispatch(setEncryptionKey(securityKey));
             setIsSecurityModalOpen(false);
             dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
             fetchAssets(1);
-            fetchCurrencies();
         } catch (error: any) {
             const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
@@ -141,23 +138,25 @@ const AssetsPage: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (!window.confirm('Bu işlemi silmek istediğinize emin misiniz?')) return;
+        setAssetToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
 
-        setIsDeleting(id);
+    const confirmDelete = async () => {
+        if (!assetToDelete) return;
+
+        setIsDeleting(assetToDelete);
         try {
-            await api.delete(`/assets/${id}`);
+            await api.delete(`/assets/${assetToDelete}`);
             dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
             fetchAssets(page);
+            setIsDeleteModalOpen(false);
         } catch (error: any) {
             dispatch(addToast({ message: 'Silme işlemi sırasında bir hata oluştu.', type: 'error' }));
         } finally {
             setIsDeleting(null);
+            setAssetToDelete(null);
         }
-    };
-
-    const handleLogout = () => {
-        dispatch(logout());
-        navigate(PATHS.HOME);
     };
 
     const formik = useFormik({
@@ -191,7 +190,6 @@ const AssetsPage: React.FC = () => {
         },
     });
 
-    // Auto-populate price based on selected currency and transaction type
     useEffect(() => {
         if (formik.values.currency_id && currencies.length > 0) {
             const selectedCurrency = currencies.find(c => c.id === parseInt(formik.values.currency_id));
@@ -203,197 +201,161 @@ const AssetsPage: React.FC = () => {
     }, [formik.values.currency_id, formik.values.type, currencies]);
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white flex">
-            {/* Sidebar */}
-            <aside className="w-72 border-r border-white/5 bg-zinc-900/30 flex flex-col p-6 fixed inset-y-0">
-                <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => navigate(PATHS.HOME)}>
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-zinc-900 shadow-lg shadow-amber-500/20">
-                        <Coins className="w-6 h-6" />
-                    </div>
-                    <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
-                        GoldTracker
-                    </span>
+        <div className="space-y-10">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-2">Varlıklarım</h1>
+                    <p className="text-zinc-500 font-medium">Tüm alım/satım işlemlerinizin dökümü ve geçmişi.</p>
                 </div>
+                <Button className="group w-full md:w-auto" onClick={() => setIsModalOpen(true)}>
+                    <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
+                    Yeni İşlem Ekle
+                </Button>
+            </header>
 
-                <nav className="flex-1 flex flex-col gap-2">
-                    <button onClick={() => navigate(PATHS.DASHBOARD)} className="flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-white/5 rounded-2xl transition-all font-medium">
-                        <LayoutDashboard className="w-5 h-5" />
-                        Dashboard
-                    </button>
-                    <button onClick={() => navigate(PATHS.ASSETS)} className="flex items-center gap-4 px-4 py-3 bg-white/5 border border-white/10 rounded-2xl text-amber-500 font-bold transition-all shadow-lg shadow-amber-500/5">
-                        <History className="w-5 h-5" />
-                        Varlıklarım
-                    </button>
-                    <button onClick={() => navigate(PATHS.PROFILE)} className="flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-white hover:bg-white/5 rounded-2xl transition-all font-medium">
-                        <UserIcon className="w-5 h-5" />
-                        Profil
-                    </button>
-                </nav>
-
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-4 px-4 py-3 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-2xl transition-all font-medium mt-auto"
-                >
-                    <LogOut className="w-5 h-5" />
-                    Çıkış Yap
-                </button>
-            </aside>
-
-            {/* Main Content */}
-            <main className="flex-1 ml-72 p-10 overflow-y-auto">
-                <header className="flex items-center justify-between mb-12">
-                    <div>
-                        <h1 className="text-4xl font-black mb-2 tracking-tight">Varlıklarım</h1>
-                        <p className="text-zinc-500">Tüm alım/satım işlemlerinizin dökümü ve geçmişi.</p>
-                    </div>
-                    <Button className="group" onClick={() => setIsModalOpen(true)}>
-                        <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
-                        Yeni İşlem Ekle
-                    </Button>
-                </header>
-
-                <div className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-white/5 bg-white/5">
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Tür / Tarih</th>
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Varlık</th>
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Miktar</th>
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Birim Fiyat</th>
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Toplam</th>
-                                    <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500"></th>
+            <div className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
+                        <thead>
+                            <tr className="border-b border-white/5 bg-white/5">
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Tür / Tarih</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Varlık</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Miktar</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Birim Fiyat</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Toplam</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={6} className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-4">
+                                            <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
+                                            <p className="text-zinc-500 font-medium">Veriler yükleniyor...</p>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {isLoading ? (
-                                    <tr>
-                                        <td colSpan={6} className="py-20 text-center">
-                                            <div className="flex flex-col items-center gap-4">
-                                                <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-                                                <p className="text-zinc-500 font-medium">Veriler yükleniyor...</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : assets.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="py-20 text-center">
-                                            <div className="flex flex-col items-center gap-6 opacity-30">
-                                                <History className="w-20 h-20" />
-                                                <p className="text-xl font-medium">Henüz bir işlem kaydınız bulunmuyor.</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    assets.map((asset) => (
-                                        <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`p-3 rounded-xl ${asset.type === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
-                                                        }`}>
-                                                        {asset.type === 'buy' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-bold text-sm">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
-                                                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
-                                                            <Calendar className="w-3 h-3" /> {formatDate(asset.date, dateFormat)}
-                                                        </p>
-                                                    </div>
+                            ) : assets.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="py-20 text-center">
+                                        <div className="flex flex-col items-center gap-6 opacity-30">
+                                            <History className="w-20 h-20" />
+                                            <p className="text-xl font-medium">Henüz bir işlem kaydınız bulunmuyor.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                assets.map((asset) => (
+                                    <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`p-3 rounded-xl ${asset.type === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                    {asset.type === 'buy' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-6">
                                                 <div>
-                                                    <p className="font-bold text-white">{asset.currency.name}</p>
-                                                    <p className="text-xs text-zinc-500 font-mono mt-1">{asset.currency.code}</p>
+                                                    <p className="font-bold text-sm">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
+                                                    <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
+                                                        <Calendar className="w-3 h-3" /> {formatDate(asset.date, dateFormat)}
+                                                    </p>
                                                 </div>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <span className="font-bold text-white tracking-tighter">
-                                                    {parseFloat(asset.amount).toLocaleString('tr-TR')}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <span className="text-zinc-400 font-medium">
-                                                    ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <span className={`font-black tracking-tighter text-lg ${asset.type === 'buy' ? 'text-white' : 'text-zinc-400'
-                                                    }`}>
-                                                    ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <button
-                                                    onClick={() => handleDelete(asset.id)}
-                                                    disabled={isDeleting === asset.id}
-                                                    className="p-3 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                >
-                                                    {isDeleting === asset.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {pagination && pagination.last_page > 1 && (
-                        <div className="px-8 py-6 flex items-center justify-between border-t border-white/5 bg-white/5">
-                            <p className="text-xs text-zinc-500 font-medium">
-                                Toplam <span className="text-white font-bold">{pagination.total}</span> işlemden
-                                <span className="text-white font-bold"> {(page - 1) * pagination.per_page + 1} - {Math.min(page * pagination.per_page, pagination.total)}</span> gösteriliyor
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    disabled={page === 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                    className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <div className="flex items-center gap-1">
-                                    {[...Array(pagination.last_page)].map((_, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => setPage(i + 1)}
-                                            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${page === i + 1 ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20' : 'hover:bg-white/5 text-zinc-500'
-                                                }`}
-                                        >
-                                            {i + 1}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button
-                                    disabled={page === pagination.last_page}
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div>
+                                                <p className="font-bold text-white">
+                                                    {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold')
+                                                        ? asset.currency.name
+                                                        : asset.currency.code}
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <span className="font-bold text-white tracking-tighter">
+                                                {parseFloat(asset.amount).toLocaleString('tr-TR')}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <span className="text-zinc-400 font-medium">
+                                                ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <span className={`font-black tracking-tighter text-lg ${asset.type === 'buy' ? 'text-white' : 'text-zinc-400'}`}>
+                                                ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <button
+                                                onClick={() => handleDelete(asset.id)}
+                                                disabled={isDeleting === asset.id}
+                                                className="p-3 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all opacity-100 lg:opacity-0 group-hover:opacity-100"
+                                            >
+                                                {isDeleting === asset.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
 
-                {/* Info Note */}
-                <div className="mt-12 p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex items-start gap-4">
-                    <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-1" />
-                    <div className="text-sm">
-                        <p className="font-bold text-amber-500 mb-1">Şifreleme Hakkında Not</p>
-                        <p className="text-zinc-500 leading-relaxed">
-                            Varlıklarınızın gizliliği için şifreleme özelliğini kullanıyorsanız, verilerinize güvenli bir şekilde erişebilmek için profil sayfanızdan şifreleme anahtarınızı doğrulamanız gerekmektedir. Doğrulama yapıldıktan sonra tüm verileriniz otomatik olarak görünür hale gelecektir.
+                {pagination && pagination.last_page > 1 && (
+                    <div className="px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 bg-white/5">
+                        <p className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                            Toplam <span className="text-white font-bold">{pagination.total}</span> işlemden
+                            <span className="text-white font-bold"> {(page - 1) * pagination.per_page + 1} - {Math.min(page * pagination.per_page, pagination.total)}</span> gösteriliyor
                         </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                disabled={page === 1}
+                                onClick={() => setPage(p => p - 1)}
+                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 transition-all"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <div className="flex items-center gap-1 overflow-x-auto max-w-[200px] sm:max-w-none no-scrollbar">
+                                {[...Array(pagination.last_page)].map((_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setPage(i + 1)}
+                                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${page === i + 1 ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20' : 'hover:bg-white/5 text-zinc-500'
+                                            }`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                disabled={page === pagination.last_page}
+                                onClick={() => setPage(p => p + 1)}
+                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 transition-all"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </main>
+                )}
+            </div>
 
-            {/* Add Asset Modal */}
+            <div className="p-6 bg-amber-500/5 border border-amber-500/20 rounded-3xl flex items-start gap-4">
+                <AlertCircle className="w-6 h-6 text-amber-500 shrink-0 mt-1" />
+                <div className="text-sm">
+                    <p className="font-bold text-amber-500 mb-1">Şifreleme Hakkında Not</p>
+                    <p className="text-zinc-500 leading-relaxed">
+                        Varlıklarınızın gizliliği için şifreleme özelliğini kullanıyorsanız, verilerinize güvenli bir şekilde erişebilmek için profil sayfanızdan şifreleme anahtarınızı doğrulamanız gerekmektedir.
+                    </p>
+                </div>
+            </div>
+
+            {/* Add Asset Modal / Bottom Tray */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-zinc-950/80 backdrop-blur-sm">
-                    <div className="w-full max-w-xl bg-zinc-900 border border-white/10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/80 backdrop-blur-sm">
+                    <div className="w-full max-w-xl bg-zinc-900 border-t lg:border border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar">
+                        {/* Drag Handle for Mobile */}
+                        <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto my-4 lg:hidden" />
+
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
                             <h2 className="text-2xl font-black">Yeni İşlem Ekle</h2>
                             <button
@@ -424,7 +386,29 @@ const AssetsPage: React.FC = () => {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-zinc-500 px-1 uppercase tracking-widest text-center block w-full mb-3">Varlık Grubu</label>
+                                    <div className="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-xl">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedAssetType('Altın')}
+                                            className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Altın' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'
+                                                }`}
+                                        >
+                                            Altın
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedAssetType('Döviz')}
+                                            className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Döviz' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'
+                                                }`}
+                                        >
+                                            Döviz
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-zinc-500 px-1 uppercase tracking-widest">Varlık</label>
                                     <div className="relative">
@@ -435,9 +419,18 @@ const AssetsPage: React.FC = () => {
                                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white outline-none focus:border-amber-500/50 appearance-none transition-all"
                                         >
                                             <option value="" disabled className="bg-zinc-900">Seçiniz...</option>
-                                            {currencies.map(cur => (
-                                                <option key={cur.id} value={cur.id} className="bg-zinc-900">{cur.name} ({cur.code})</option>
-                                            ))}
+                                            {currencies
+                                                .filter(cur => {
+                                                    if (selectedAssetType === 'Altın') {
+                                                        return cur.type === 'Altın' || cur.type === 'Gold';
+                                                    }
+                                                    return cur.type === 'Döviz';
+                                                })
+                                                .map(cur => (
+                                                    <option key={cur.id} value={cur.id} className="bg-zinc-900">
+                                                        {selectedAssetType === 'Altın' ? cur.name : cur.code}
+                                                    </option>
+                                                ))}
                                         </select>
                                         <Coins className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                                     </div>
@@ -445,7 +438,9 @@ const AssetsPage: React.FC = () => {
                                         <p className="text-xs text-red-400 font-medium px-1">{formik.errors.currency_id}</p>
                                     )}
                                 </div>
+                            </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Input
                                     label="Tarih"
                                     type="date"
@@ -456,32 +451,54 @@ const AssetsPage: React.FC = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <Input
-                                    label="Miktar"
-                                    placeholder="0.00"
-                                    type="number"
-                                    step="0.01"
-                                    icon={<Hash className="w-5 h-5" />}
-                                    name="amount"
-                                    onChange={formik.handleChange}
-                                    value={formik.values.amount}
-                                    error={formik.touched.amount && formik.errors.amount ? formik.errors.amount : undefined}
-                                />
-                                <Input
-                                    label="Birim Fiyat (₺)"
-                                    placeholder="0.00"
-                                    type="number"
-                                    step="0.01"
-                                    icon={<Banknote className="w-5 h-5" />}
-                                    name="price"
-                                    onChange={formik.handleChange}
-                                    value={formik.values.price}
-                                    error={formik.touched.price && formik.errors.price ? formik.errors.price : undefined}
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="p-1.5 bg-zinc-950 border border-white/5 rounded-2xl relative">
+                                    <Input
+                                        label="Miktar"
+                                        placeholder="0"
+                                        type="text"
+                                        icon={<Hash className="w-5 h-5" />}
+                                        name="amount"
+                                        onChange={(e) => {
+                                            const rawValue = parseNumericValue(e.target.value);
+                                            if (!isNaN(Number(rawValue)) || rawValue === '' || rawValue === '.') {
+                                                formik.setFieldValue('amount', rawValue);
+                                            }
+                                        }}
+                                        value={formatNumericValue(formik.values.amount)}
+                                        error={formik.touched.amount && formik.errors.amount ? formik.errors.amount : undefined}
+                                    />
+                                </div>
+                                <div className="p-1.5 bg-zinc-950 border border-white/5 rounded-2xl relative">
+                                    <Input
+                                        label="Birim Fiyat (₺)"
+                                        placeholder="0"
+                                        type="text"
+                                        icon={<Banknote className="w-5 h-5" />}
+                                        name="price"
+                                        onChange={(e) => {
+                                            const rawValue = parseNumericValue(e.target.value);
+                                            if (!isNaN(Number(rawValue)) || rawValue === '' || rawValue === '.') {
+                                                formik.setFieldValue('price', rawValue);
+                                            }
+                                        }}
+                                        value={formatNumericValue(formik.values.price)}
+                                        error={formik.touched.price && formik.errors.price ? formik.errors.price : undefined}
+                                    />
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-6 flex flex-col items-center justify-center gap-2">
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">Tahmini Toplam Tutar</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-zinc-500 text-xl font-medium">₺</span>
+                                    <span className="text-3xl sm:text-4xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
+                                        {(Number(formik.values.amount || 0) * Number(formik.values.price || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Input
                                     label="Yer"
                                     placeholder="Kuyumcu, Banka vb."
@@ -511,10 +528,11 @@ const AssetsPage: React.FC = () => {
                     </div>
                 </div>
             )}
-            {/* Security Modal */}
+
+            {/* Security Modal / Bottom Tray */}
             {isSecurityModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-zinc-950/90 backdrop-blur-md">
-                    <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-[2.5rem] shadow-2xl p-10 overflow-hidden relative">
+                <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/90 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-10 overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-10 opacity-5">
                             <Shield className="w-32 h-32" />
                         </div>
@@ -525,7 +543,7 @@ const AssetsPage: React.FC = () => {
                             </div>
                             <h2 className="text-3xl font-black mb-4 tracking-tight">Güvenlik Kontrolü</h2>
                             <p className="text-zinc-500 text-sm leading-relaxed mb-10 px-4">
-                                Varlıklarınız şifrelenmiştir. İşlemlerinizi görebilmek için lütfen <span className="text-amber-500 font-bold">Şifreleme Anahtarınızı</span> giriniz.
+                                Varlıklarınız şifrelenmiştir. Erişmek için lütfen <span className="text-amber-500 font-bold">Şifreleme Anahtarınızı</span> giriniz.
                             </p>
 
                             <form onSubmit={handleVerifyKey} className="space-y-6">
@@ -550,6 +568,46 @@ const AssetsPage: React.FC = () => {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Delete Confirmation Modal / Bottom Tray */}
+            {isDeleteModalOpen && (
+                <div className="fixed inset-0 z-[110] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/90 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-10 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-10 opacity-5">
+                            <Trash2 className="w-32 h-32 text-red-500" />
+                        </div>
+
+                        <div className="text-center relative z-10">
+                            <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-red-500/5">
+                                <Trash2 className="w-10 h-10 text-red-500" />
+                            </div>
+                            <h2 className="text-3xl font-black mb-4 tracking-tight">İşlemi Sil</h2>
+                            <p className="text-zinc-500 text-sm leading-relaxed mb-10 px-4">
+                                Bu işlemi silmek istediğinize emin misiniz? Bu işlem geri <span className="text-red-500 font-bold">alınamaz</span>.
+                            </p>
+
+                            <div className="flex flex-col gap-4">
+                                <Button
+                                    onClick={confirmDelete}
+                                    className="w-full !bg-red-500 !text-white hover:!bg-red-600 shadow-lg shadow-red-500/20"
+                                    isLoading={isDeleting !== null}
+                                >
+                                    Evet, Sil
+                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                        setAssetToDelete(null);
+                                    }}
+                                    className="text-xs font-bold text-zinc-500 hover:text-white transition-all uppercase tracking-widest py-2"
+                                >
+                                    Vazgeç
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
