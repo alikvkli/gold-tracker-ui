@@ -18,16 +18,17 @@ import {
     Hash,
     Banknote,
     MapPin,
-    StickyNote
+    StickyNote,
+    Shield
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 import { PATHS } from '@/routes/paths';
-import { useAppDispatch } from '@/hooks';
-import { logout } from '@/features/app';
+import { logout, setEncryptionKey } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks';
 import api from '@/lib/api';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
@@ -52,6 +53,8 @@ interface Currency {
     id: number;
     code: string;
     name: string;
+    buying: string;
+    selling: string;
 }
 
 interface Pagination {
@@ -68,10 +71,14 @@ const AssetsPage: React.FC = () => {
     const [assets, setAssets] = useState<Asset[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
+    const { user, encryptionKey } = useAppSelector(state => state.app);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+    const [securityKey, setSecurityKey] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
 
     const fetchAssets = async (pageNum: number) => {
         setIsLoading(true);
@@ -81,6 +88,7 @@ const AssetsPage: React.FC = () => {
             setPagination(response.data.pagination);
         } catch (error) {
             console.error('Varlıklar alınırken hata oluştu:', error);
+            dispatch(addToast({ message: 'Varlık bilgileriniz yüklenemedi.', type: 'error' }));
         } finally {
             setIsLoading(false);
         }
@@ -92,13 +100,44 @@ const AssetsPage: React.FC = () => {
             setCurrencies(response.data);
         } catch (error) {
             console.error('Kurlar alınırken hata oluştu:', error);
+            dispatch(addToast({ message: 'Kur bilgileri yüklenemedi.', type: 'error' }));
         }
     };
 
     useEffect(() => {
-        fetchAssets(page);
-        fetchCurrencies();
-    }, [page]);
+        if (user?.encrypted && !encryptionKey) {
+            setIsSecurityModalOpen(true);
+            setIsLoading(false);
+        } else {
+            fetchAssets(page);
+            fetchCurrencies();
+        }
+    }, [page, user?.encrypted, encryptionKey]);
+
+    const handleVerifyKey = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!securityKey) return;
+
+        setIsVerifying(true);
+        try {
+            // Test the key by making a request to the assets endpoint
+            await api.get('/assets?page=1', {
+                headers: { 'X-Encryption-Key': securityKey }
+            });
+
+            // If successful, save the key and close the modal
+            dispatch(setEncryptionKey(securityKey));
+            setIsSecurityModalOpen(false);
+            dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
+            fetchAssets(1);
+            fetchCurrencies();
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
+            dispatch(addToast({ message: errorMessage, type: 'error' }));
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     const handleDelete = async (id: number) => {
         if (!window.confirm('Bu işlemi silmek istediğinize emin misiniz?')) return;
@@ -150,6 +189,17 @@ const AssetsPage: React.FC = () => {
             }
         },
     });
+
+    // Auto-populate price based on selected currency and transaction type
+    useEffect(() => {
+        if (formik.values.currency_id && currencies.length > 0) {
+            const selectedCurrency = currencies.find(c => c.id === parseInt(formik.values.currency_id));
+            if (selectedCurrency) {
+                const price = formik.values.type === 'buy' ? selectedCurrency.buying : selectedCurrency.selling;
+                formik.setFieldValue('price', price);
+            }
+        }
+    }, [formik.values.currency_id, formik.values.type, currencies]);
 
     return (
         <div className="min-h-screen bg-zinc-950 text-white flex">
@@ -458,6 +508,49 @@ const AssetsPage: React.FC = () => {
                                 {formik.values.type === 'buy' ? 'Alımı Kaydet' : 'Satımı Kaydet'}
                             </Button>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Security Modal */}
+            {isSecurityModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-zinc-950/90 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-zinc-900 border border-white/10 rounded-[2.5rem] shadow-2xl p-10 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-10 opacity-5">
+                            <Shield className="w-32 h-32" />
+                        </div>
+
+                        <div className="text-center relative z-10">
+                            <div className="w-20 h-20 bg-amber-500/10 border border-amber-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-amber-500/5">
+                                <Shield className="w-10 h-10 text-amber-500" />
+                            </div>
+                            <h2 className="text-3xl font-black mb-4 tracking-tight">Güvenlik Kontrolü</h2>
+                            <p className="text-zinc-500 text-sm leading-relaxed mb-10 px-4">
+                                Varlıklarınız şifrelenmiştir. İşlemlerinizi görebilmek için lütfen <span className="text-amber-500 font-bold">Şifreleme Anahtarınızı</span> giriniz.
+                            </p>
+
+                            <form onSubmit={handleVerifyKey} className="space-y-6">
+                                <Input
+                                    label="Şifreleme Anahtarı"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={securityKey}
+                                    onChange={(e) => setSecurityKey(e.target.value)}
+                                    autoFocus
+                                />
+                                <div className="flex flex-col gap-4">
+                                    <Button type="submit" className="w-full" isLoading={isVerifying}>
+                                        Doğrula ve Eriş
+                                    </Button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(PATHS.DASHBOARD)}
+                                        className="text-xs font-bold text-zinc-500 hover:text-white transition-all uppercase tracking-widest"
+                                    >
+                                        Geri Dön
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

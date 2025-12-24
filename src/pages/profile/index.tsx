@@ -29,7 +29,7 @@ import Input from '@/components/Input';
 const ProfilePage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { user, encryptionKey } = useAppSelector(state => state.app);
+    const { user, encryptionKey, token } = useAppSelector(state => state.app);
 
     const [showKey, setShowKey] = useState(false);
     const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
@@ -74,10 +74,13 @@ const ProfilePage: React.FC = () => {
         }),
         onSubmit: async (values) => {
             try {
-                await api.post('/encryption/toggle', values);
+                await api.post('/encryption/toggle', {
+                    ...values,
+                    status: !user?.encrypted
+                });
                 // After toggle, the user object in state should be updated
                 const updatedUser = { ...user!, encrypted: !user?.encrypted };
-                dispatch(setLogin({ user: updatedUser, token: useAppSelector(state => state.app.token)! }));
+                dispatch(setLogin({ user: updatedUser, token: token! }));
 
                 if (!updatedUser.encrypted) {
                     dispatch(setEncryptionKey(null));
@@ -282,13 +285,13 @@ const ProfilePage: React.FC = () => {
                             </div>
                             <h3 className="text-2xl font-black">Güvenlik Onayı</h3>
                             <p className="text-zinc-500 mt-2 text-sm px-4">
-                                Şifreleme durumunu değiştirmek için lütfen mevcut hesap şifrenizi girerek onaylayın.
+                                Şifreleme durumunu değiştirmek için lütfen **Şifreleme Anahtarınızı** (ikincil şifre) girerek onaylayın.
                             </p>
                         </div>
 
                         <form onSubmit={encryptionFormik.handleSubmit} className="space-y-6">
                             <Input
-                                label="Hesap Şifresi"
+                                label="Şifreleme Anahtarı"
                                 type="password"
                                 name="password"
                                 placeholder="••••••••"

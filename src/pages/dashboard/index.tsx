@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { PATHS } from '@/routes/paths';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { logout } from '@/features/app';
+import { addToast } from '@/features/ui/uiSlice';
 import api from '@/lib/api';
 
 interface Currency {
@@ -29,6 +30,7 @@ const DashboardPage: React.FC = () => {
             setCurrencies(response.data);
         } catch (error) {
             console.error('Kurlar alınırken hata oluştu:', error);
+            dispatch(addToast({ message: 'Güncel kurlar alınamadı.', type: 'error' }));
         } finally {
             setIsLoading(false);
         }
