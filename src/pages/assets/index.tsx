@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     History,
     Plus,
@@ -16,7 +16,9 @@ import {
     Shield,
     ChevronLeft,
     ChevronRight,
-    Coins
+    Coins,
+    Edit,
+    Wallet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -55,6 +57,9 @@ interface Currency {
     type: string;
     buying: string;
     selling: string;
+    last_updated_at?: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 interface Pagination {
@@ -69,6 +74,7 @@ const AssetsPage: React.FC = () => {
     const dispatch = useAppDispatch();
 
     const [assets, setAssets] = useState<Asset[]>([]);
+    const [allAssets, setAllAssets] = useState<Asset[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
     const { user, encryptionKey, dateFormat } = useAppSelector(state => state.app);
@@ -82,6 +88,25 @@ const AssetsPage: React.FC = () => {
     const [selectedAssetType, setSelectedAssetType] = useState<'Altın' | 'Döviz'>('Altın');
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [assetToDelete, setAssetToDelete] = useState<number | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+
+    const currencyMap = useMemo(() => {
+        const map = new Map<number, Currency>();
+        currencies.forEach(currency => map.set(currency.id, currency));
+        return map;
+    }, [currencies]);
+
+    const getCurrencyForAsset = (asset: Asset) => {
+        const byId = currencyMap.get(asset.currency_id);
+        if (byId) return byId;
+
+        const assetCode = asset.currency?.code?.toLowerCase();
+        if (!assetCode) return undefined;
+
+        return currencies.find(cur => cur.code?.toLowerCase() === assetCode);
+    };
 
     const fetchAssets = async (pageNum: number) => {
         setIsLoading(true);
@@ -94,6 +119,15 @@ const AssetsPage: React.FC = () => {
             dispatch(addToast({ message: 'Varlık bilgileriniz yüklenemedi.', type: 'error' }));
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchAllAssets = async () => {
+        try {
+            const response = await api.get('/assets?per_page=10000');
+            setAllAssets(response.data.data);
+        } catch (error) {
+            console.error('Tüm varlıklar alınırken hata oluştu:', error);
         }
     };
 
@@ -112,6 +146,7 @@ const AssetsPage: React.FC = () => {
             setIsLoading(false);
         } else {
             fetchAssets(page);
+            fetchAllAssets();
             fetchCurrencies();
         }
     }, [page, user?.encrypted, encryptionKey]);
@@ -129,6 +164,7 @@ const AssetsPage: React.FC = () => {
             setIsSecurityModalOpen(false);
             dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
             fetchAssets(1);
+            fetchAllAssets();
         } catch (error: any) {
             const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
@@ -150,6 +186,7 @@ const AssetsPage: React.FC = () => {
             await api.delete(`/assets/${assetToDelete}`);
             dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
             fetchAssets(page);
+            fetchAllAssets();
             setIsDeleteModalOpen(false);
         } catch (error: any) {
             dispatch(addToast({ message: 'Silme işlemi sırasında bir hata oluştu.', type: 'error' }));
@@ -158,6 +195,112 @@ const AssetsPage: React.FC = () => {
             setAssetToDelete(null);
         }
     };
+
+    const handleEdit = (asset: Asset) => {
+        setAssetToEdit(asset);
+        formik.setValues({
+            currency_id: asset.currency_id.toString(),
+            type: asset.type,
+            amount: asset.amount,
+            price: asset.price,
+            date: asset.date,
+            place: asset.place || '',
+            note: asset.note || '',
+        });
+        setSelectedAssetType(asset.currency.type === 'Altın' || asset.currency.type === 'Gold' ? 'Altın' : 'Döviz');
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdate = async (values: any) => {
+        if (!assetToEdit) return;
+
+        setIsEditing(true);
+        try {
+            await api.put(`/assets/${assetToEdit.id}`, values);
+            dispatch(addToast({ message: 'İşlem başarıyla güncellendi.', type: 'success' }));
+            setIsEditModalOpen(false);
+            setAssetToEdit(null);
+            formik.resetForm();
+            fetchAssets(page);
+            fetchAllAssets();
+        } catch (error: any) {
+            dispatch(addToast({ message: error.response?.data?.errors?.[0] || 'İşlem güncellenirken bir hata oluştu.', type: 'error' }));
+        } finally {
+            setIsEditing(false);
+        }
+    };
+
+    // Calculate totals and profit/loss
+    const calculateTotals = () => {
+        let totalAmount = 0;
+        let totalCost = 0;
+        let totalValue = 0;
+
+        // Currencies henüz yüklenmemişse 0 döndür
+        if (currencies.length === 0 || allAssets.length === 0) {
+            return { totalAmount: 0, totalCost: 0, totalValue: 0, profitLoss: 0, profitLossPercent: 0 };
+        }
+
+        allAssets.forEach(asset => {
+            const currency = getCurrencyForAsset(asset);
+
+            if (currency && currency.selling && currency.selling !== '0' && currency.selling !== '0.0000') {
+                const amount = parseFloat(asset.amount);
+                const price = parseFloat(asset.price);
+                const currentPrice = parseFloat(currency.selling);
+
+                if (!isNaN(amount) && !isNaN(price) && !isNaN(currentPrice) && amount > 0 && price > 0 && currentPrice > 0) {
+                    if (asset.type === 'buy') {
+                        totalAmount += amount;
+                        totalCost += amount * price;
+                        totalValue += amount * currentPrice;
+                    } else {
+                        totalAmount -= amount;
+                        totalCost -= amount * price;
+                        totalValue -= amount * currentPrice;
+                    }
+                }
+            }
+        });
+
+        const profitLoss = totalValue - totalCost;
+        const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
+
+        return { totalAmount, totalCost, totalValue, profitLoss, profitLossPercent };
+    };
+
+    const calculateAssetProfitLoss = (asset: Asset) => {
+        if (asset.type !== 'buy') {
+            return { profitLoss: 0, profitLossPercent: 0 };
+        }
+
+        // Currencies henüz yüklenmemişse 0 döndür
+        if (currencies.length === 0) {
+            return { profitLoss: 0, profitLossPercent: 0 };
+        }
+
+        const currency = getCurrencyForAsset(asset);
+
+        if (!currency || !currency.selling || currency.selling === '0' || currency.selling === '0.0000') {
+            return { profitLoss: 0, profitLossPercent: 0 };
+        }
+
+        const amount = parseFloat(asset.amount);
+        const buyPrice = parseFloat(asset.price);
+        const currentPrice = parseFloat(currency.selling);
+
+        if (isNaN(amount) || isNaN(buyPrice) || isNaN(currentPrice) || amount <= 0 || buyPrice <= 0 || currentPrice <= 0) {
+            console.warn('Geçersiz değerler:', { amount, buyPrice, currentPrice, assetId: asset.id });
+            return { profitLoss: 0, profitLossPercent: 0 };
+        }
+
+        const profitLoss = (currentPrice - buyPrice) * amount;
+        const profitLossPercent = buyPrice > 0 ? ((currentPrice - buyPrice) / buyPrice) * 100 : 0;
+
+        return { profitLoss, profitLossPercent };
+    };
+
+    const totals = calculateTotals();
 
     const formik = useFormik({
         initialValues: {
@@ -177,15 +320,20 @@ const AssetsPage: React.FC = () => {
             date: Yup.string().required('Tarih zorunludur'),
         }),
         onSubmit: async (values) => {
-            try {
-                await api.post('/assets', values);
-                dispatch(addToast({ message: 'İşlem başarıyla eklendi.', type: 'success' }));
-                setIsModalOpen(false);
-                formik.resetForm();
-                fetchAssets(1);
-                setPage(1);
-            } catch (error: any) {
-                dispatch(addToast({ message: error.response?.data?.errors?.[0] || 'İşlem eklenirken bir hata oluştu.', type: 'error' }));
+            if (isEditModalOpen && assetToEdit) {
+                await handleUpdate(values);
+            } else {
+                try {
+                    await api.post('/assets', values);
+                    dispatch(addToast({ message: 'İşlem başarıyla eklendi.', type: 'success' }));
+                    setIsModalOpen(false);
+                    formik.resetForm();
+                    fetchAssets(1);
+                    fetchAllAssets();
+                    setPage(1);
+                } catch (error: any) {
+                    dispatch(addToast({ message: error.response?.data?.errors?.[0] || 'İşlem eklenirken bir hata oluştu.', type: 'error' }));
+                }
             }
         },
     });
@@ -204,14 +352,67 @@ const AssetsPage: React.FC = () => {
         <div className="space-y-10">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-2">Varlıklarım</h1>
+                    <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-2">Birikimlerim</h1>
                     <p className="text-zinc-500 font-medium">Tüm alım/satım işlemlerinizin dökümü ve geçmişi.</p>
                 </div>
-                <Button className="group w-full md:w-auto" onClick={() => setIsModalOpen(true)}>
+                <Button className="group w-full md:w-auto" onClick={() => {
+                    setIsEditModalOpen(false);
+                    setAssetToEdit(null);
+                    formik.resetForm();
+                    setIsModalOpen(true);
+                }}>
                     <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
                     Yeni İşlem Ekle
                 </Button>
             </header>
+
+            {/* Summary Cards */}
+            {!isLoading && assets.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500">
+                                <Wallet className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Miktar</p>
+                                <p className="text-2xl font-black text-white">
+                                    {totals.totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500">
+                                <Banknote className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Değer</p>
+                                <p className="text-2xl font-black text-white">
+                                    ₺{totals.totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className={`bg-zinc-900/50 border rounded-[2.5rem] p-8 backdrop-blur-xl ${totals.profitLoss >= 0 ? 'border-green-500/20' : 'border-red-500/20'}`}>
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${totals.profitLoss >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                {totals.profitLoss >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Kar/Zarar</p>
+                                <p className={`text-2xl font-black ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {totals.profitLoss >= 0 ? '+' : ''}₺{totals.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </p>
+                                <p className={`text-xs font-bold mt-1 ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {totals.profitLossPercent >= 0 ? '+' : ''}{totals.profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
                 <div className="overflow-x-auto">
@@ -223,13 +424,15 @@ const AssetsPage: React.FC = () => {
                                 <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Miktar</th>
                                 <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Birim Fiyat</th>
                                 <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Toplam</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Yer</th>
+                                <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Kar/Zarar</th>
                                 <th className="px-8 py-6 text-xs font-black uppercase tracking-widest text-zinc-500"></th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="py-20 text-center">
+                                    <td colSpan={8} className="py-20 text-center">
                                         <div className="flex flex-col items-center gap-4">
                                             <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
                                             <p className="text-zinc-500 font-medium">Veriler yükleniyor...</p>
@@ -238,7 +441,7 @@ const AssetsPage: React.FC = () => {
                                 </tr>
                             ) : assets.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-20 text-center">
+                                    <td colSpan={8} className="py-20 text-center">
                                         <div className="flex flex-col items-center gap-6 opacity-30">
                                             <History className="w-20 h-20" />
                                             <p className="text-xl font-medium">Henüz bir işlem kaydınız bulunmuyor.</p>
@@ -246,56 +449,91 @@ const AssetsPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                assets.map((asset) => (
-                                    <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`p-3 rounded-xl ${asset.type === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                                                    {asset.type === 'buy' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                                assets.map((asset) => {
+                                    const profitLoss = calculateAssetProfitLoss(asset);
+                                    return (
+                                        <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-3 rounded-xl ${asset.type === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                        {asset.type === 'buy' ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
+                                                        <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
+                                                            <Calendar className="w-3 h-3" /> {formatDate(asset.date, dateFormat)}
+                                                        </p>
+                                                    </div>
                                                 </div>
+                                            </td>
+                                            <td className="px-8 py-6">
                                                 <div>
-                                                    <p className="font-bold text-sm">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
-                                                    <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
-                                                        <Calendar className="w-3 h-3" /> {formatDate(asset.date, dateFormat)}
+                                                    <p className="font-bold text-white">
+                                                        {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold')
+                                                            ? asset.currency.name
+                                                            : asset.currency.code}
                                                     </p>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div>
-                                                <p className="font-bold text-white">
-                                                    {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold')
-                                                        ? asset.currency.name
-                                                        : asset.currency.code}
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <span className="font-bold text-white tracking-tighter">
-                                                {parseFloat(asset.amount).toLocaleString('tr-TR')}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <span className="text-zinc-400 font-medium">
-                                                ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <span className={`font-black tracking-tighter text-lg ${asset.type === 'buy' ? 'text-white' : 'text-zinc-400'}`}>
-                                                ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <button
-                                                onClick={() => handleDelete(asset.id)}
-                                                disabled={isDeleting === asset.id}
-                                                className="p-3 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all opacity-100 lg:opacity-0 group-hover:opacity-100"
-                                            >
-                                                {isDeleting === asset.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <span className="font-bold text-white tracking-tighter">
+                                                    {parseFloat(asset.amount).toLocaleString('tr-TR')}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <span className="text-zinc-400 font-medium">
+                                                    ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <span className={`font-black tracking-tighter text-lg ${asset.type === 'buy' ? 'text-white' : 'text-zinc-400'}`}>
+                                                    ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                {asset.place ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin className="w-4 h-4 text-zinc-500" />
+                                                        <span className="text-sm text-zinc-400 font-medium">{asset.place}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-zinc-600 text-sm">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                {asset.type === 'buy' ? (
+                                                    <div className="flex flex-col items-end">
+                                                        <span className={`font-black text-sm ${profitLoss.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {profitLoss.profitLoss >= 0 ? '+' : ''}₺{profitLoss.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                        <span className={`text-xs font-bold ${profitLoss.profitLoss >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
+                                                            {profitLoss.profitLossPercent >= 0 ? '+' : ''}{profitLoss.profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-zinc-500 text-sm">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100">
+                                                    <button
+                                                        onClick={() => handleEdit(asset)}
+                                                        className="p-3 text-zinc-600 hover:text-amber-400 hover:bg-amber-400/10 rounded-xl transition-all"
+                                                    >
+                                                        <Edit className="w-5 h-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(asset.id)}
+                                                        disabled={isDeleting === asset.id}
+                                                        className="p-3 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                                                    >
+                                                        {isDeleting === asset.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -349,17 +587,22 @@ const AssetsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Add Asset Modal / Bottom Tray */}
-            {isModalOpen && (
+            {/* Add/Edit Asset Modal / Bottom Tray */}
+            {(isModalOpen || isEditModalOpen) && (
                 <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/80 backdrop-blur-sm">
                     <div className="w-full max-w-xl bg-zinc-900 border-t lg:border border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto no-scrollbar">
                         {/* Drag Handle for Mobile */}
                         <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto my-4 lg:hidden" />
 
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                            <h2 className="text-2xl font-black">Yeni İşlem Ekle</h2>
+                            <h2 className="text-2xl font-black">{isEditModalOpen ? 'İşlemi Düzenle' : 'Yeni İşlem Ekle'}</h2>
                             <button
-                                onClick={() => setIsModalOpen(false)}
+                                onClick={() => {
+                                    setIsModalOpen(false);
+                                    setIsEditModalOpen(false);
+                                    setAssetToEdit(null);
+                                    formik.resetForm();
+                                }}
                                 className="p-2 hover:bg-white/5 rounded-xl text-zinc-500 hover:text-white transition-all"
                             >
                                 <X className="w-6 h-6" />
@@ -520,9 +763,12 @@ const AssetsPage: React.FC = () => {
                             <Button
                                 type="submit"
                                 className="w-full mt-4"
-                                isLoading={formik.isSubmitting}
+                                isLoading={formik.isSubmitting || isEditing}
                             >
-                                {formik.values.type === 'buy' ? 'Alımı Kaydet' : 'Satımı Kaydet'}
+                                {isEditModalOpen 
+                                    ? (formik.values.type === 'buy' ? 'Alımı Güncelle' : 'Satımı Güncelle')
+                                    : (formik.values.type === 'buy' ? 'Alımı Kaydet' : 'Satımı Kaydet')
+                                }
                             </Button>
                         </form>
                     </div>

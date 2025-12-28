@@ -6,7 +6,7 @@ import {
   ArrowRight,
   ChevronRight,
   Activity,
-  Coins
+  Wallet
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
@@ -50,10 +50,10 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-zinc-900 shadow-xl shadow-amber-600/20">
-              <Coins className="w-6 h-6" />
+              <Wallet className="w-6 h-6" />
             </div>
             <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
-              AltınTakip
+              Altın Cüzdan
             </span>
           </div>
           <div className="flex items-center gap-6">
@@ -183,9 +183,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-12">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-zinc-900 shadow-lg">
-              <Coins className="w-5 h-5" />
+              <Wallet className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight">AltınTakip</span>
+            <span className="font-bold text-lg tracking-tight">Altın Cüzdan</span>
           </div>
 
           <div className="flex flex-wrap justify-center gap-10">
@@ -197,7 +197,7 @@ export default function HomePage() {
 
           <div className="text-center">
             <p className="text-zinc-600 text-sm">
-              © 2026 AltinTakip. Tüm Hakları Saklıdır.
+              © 2026 Altın Cüzdan. Tüm Hakları Saklıdır.
             </p>
           </div>
         </div>

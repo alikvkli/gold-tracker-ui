@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    Coins,
+    Wallet,
     LayoutDashboard,
     History,
     User as UserIcon,
@@ -34,10 +34,10 @@ const Sidebar: React.FC = () => {
                 onClick={() => navigate(PATHS.HOME)}
             >
                 <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-zinc-900 shadow-lg shadow-amber-500/20">
-                    <Coins className="w-6 h-6" />
+                    <Wallet className="w-6 h-6" />
                 </div>
                 <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
-                    AltınTakip
+                    Altın Cüzdan
                 </span>
             </div>
 
