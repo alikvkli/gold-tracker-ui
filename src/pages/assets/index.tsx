@@ -28,7 +28,7 @@ import { setEncryptionKey } from '../../features/app';
 import { addToast } from '../../features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import api from '../../lib/api';
-import { formatDate, formatNumericValue, parseNumericValue, formatDateForInput } from '../../lib/date';
+import { formatDate, formatNumericValue, parseNumericValue } from '../../lib/date';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 
