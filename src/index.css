@@ -16,3 +16,22 @@
         cursor: pointer;
     }
 }
+
+@layer utilities {
+    /* Sidebar collapsed state için main content margin ayarı */
+    @media (min-width: 1024px) {
+        html[data-sidebar-collapsed="true"] .private-layout main {
+            margin-left: 80px !important;
+        }
+        
+        html[data-sidebar-collapsed="false"] .private-layout main {
+            margin-left: 256px !important;
+        }
+        
+        @media (min-width: 1280px) {
+            html[data-sidebar-collapsed="false"] .private-layout main {
+                margin-left: 288px !important;
+            }
+        }
+    }
+}
