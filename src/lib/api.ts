@@ -17,10 +17,26 @@ api.interceptors.request.use(
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            console.warn('API Request: Token not found in store');
         }
 
         if (encryptionKey) {
             config.headers['X-Encryption-Key'] = encryptionKey;
+        }
+
+        // Debug log for DELETE and PUT requests
+        if (config.method === 'delete' || config.method === 'put') {
+            console.log('API Request:', {
+                method: config.method?.toUpperCase(),
+                url: config.url,
+                hasToken: !!token,
+                hasEncryptionKey: !!encryptionKey,
+                headers: {
+                    Authorization: config.headers.Authorization ? 'Bearer ***' : 'Missing',
+                    'X-Encryption-Key': encryptionKey ? '***' : 'Missing'
+                }
+            });
         }
 
         return config;
@@ -38,6 +54,18 @@ api.interceptors.response.use(
             // Optional: Auto logout on 401
             // store.dispatch(logout());
         }
+        
+        // Log 403 errors in detail
+        if (error.response?.status === 403) {
+            console.error('403 Forbidden Error:', {
+                url: error.config?.url,
+                method: error.config?.method,
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.config?.headers
+            });
+        }
+        
         return Promise.reject(error);
     }
 );

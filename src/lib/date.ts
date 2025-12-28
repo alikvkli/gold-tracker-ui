@@ -73,3 +73,33 @@ export const parseNumericValue = (formattedValue: string): string => {
     // 2. Change comma to dot (decimal separator)
     return formattedValue.replace(/\./g, '').replace(',', '.');
 };
+
+/**
+ * Converts ISO 8601 date string to yyyy-MM-dd format for HTML date input
+ * @param dateString - ISO 8601 date string (e.g., "2025-12-17T21:00:00.000000Z")
+ * @returns Date string in yyyy-MM-dd format (e.g., "2025-12-17")
+ */
+export const formatDateForInput = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    // If already in yyyy-MM-dd format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+    }
+    
+    // Parse ISO 8601 date string
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+        console.warn('Invalid date string:', dateString);
+        return '';
+    }
+    
+    // Format as yyyy-MM-dd
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+};

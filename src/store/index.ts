@@ -1,7 +1,7 @@
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { persistStore, persistReducer, PersistConfig } from 'redux-persist';
 import { encryptTransform } from 'redux-persist-transform-encrypt';
-import storage from 'redux-persist/lib/storage/session';
+import storage from 'redux-persist/lib/storage';
 import app from "../features/app";
 import ui from "../features/ui/uiSlice";
 

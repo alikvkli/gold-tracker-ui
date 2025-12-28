@@ -29,7 +29,7 @@ import { setEncryptionKey } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import api from '@/lib/api';
-import { formatDate, formatNumericValue, parseNumericValue } from '@/lib/date';
+import { formatDate, formatNumericValue, parseNumericValue, formatDateForInput } from '@/lib/date';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
 
@@ -77,7 +77,7 @@ const AssetsPage: React.FC = () => {
     const [allAssets, setAllAssets] = useState<Asset[]>([]);
     const [currencies, setCurrencies] = useState<Currency[]>([]);
     const [pagination, setPagination] = useState<Pagination | null>(null);
-    const { user, encryptionKey, dateFormat } = useAppSelector(state => state.app);
+    const { user, encryptionKey, dateFormat, token } = useAppSelector(state => state.app);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -181,6 +181,11 @@ const AssetsPage: React.FC = () => {
     const confirmDelete = async () => {
         if (!assetToDelete) return;
 
+        if (!token) {
+            dispatch(addToast({ message: 'Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.', type: 'error' }));
+            return;
+        }
+
         setIsDeleting(assetToDelete);
         try {
             await api.delete(`/assets/${assetToDelete}`);
@@ -189,7 +194,13 @@ const AssetsPage: React.FC = () => {
             fetchAllAssets();
             setIsDeleteModalOpen(false);
         } catch (error: any) {
-            dispatch(addToast({ message: 'Silme işlemi sırasında bir hata oluştu.', type: 'error' }));
+            const errorMessage = error.response?.data?.errors?.[0] || error.response?.data?.message || 'Silme işlemi sırasında bir hata oluştu.';
+            dispatch(addToast({ message: errorMessage, type: 'error' }));
+            console.error('Delete error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
         } finally {
             setIsDeleting(null);
             setAssetToDelete(null);
@@ -203,7 +214,7 @@ const AssetsPage: React.FC = () => {
             type: asset.type,
             amount: asset.amount,
             price: asset.price,
-            date: asset.date,
+            date: formatDateForInput(asset.date), // Convert ISO date to yyyy-MM-dd format
             place: asset.place || '',
             note: asset.note || '',
         });
@@ -214,9 +225,28 @@ const AssetsPage: React.FC = () => {
     const handleUpdate = async (values: any) => {
         if (!assetToEdit) return;
 
+        if (!token) {
+            dispatch(addToast({ message: 'Oturum bilgisi bulunamadı. Lütfen tekrar giriş yapın.', type: 'error' }));
+            return;
+        }
+
         setIsEditing(true);
         try {
-            await api.put(`/assets/${assetToEdit.id}`, values);
+            // Laravel API typically uses PUT for updates, but some APIs use PATCH
+            // Try PATCH first (more RESTful), fallback to PUT if needed
+            let response;
+            try {
+                response = await api.patch(`/assets/${assetToEdit.id}`, values);
+            } catch (patchError: any) {
+                // If PATCH returns 405 (Method Not Allowed), try PUT
+                if (patchError.response?.status === 405 || patchError.response?.status === 404) {
+                    console.log('PATCH not supported, trying PUT...');
+                    response = await api.put(`/assets/${assetToEdit.id}`, values);
+                } else {
+                    throw patchError;
+                }
+            }
+            
             dispatch(addToast({ message: 'İşlem başarıyla güncellendi.', type: 'success' }));
             setIsEditModalOpen(false);
             setAssetToEdit(null);
@@ -224,7 +254,15 @@ const AssetsPage: React.FC = () => {
             fetchAssets(page);
             fetchAllAssets();
         } catch (error: any) {
-            dispatch(addToast({ message: error.response?.data?.errors?.[0] || 'İşlem güncellenirken bir hata oluştu.', type: 'error' }));
+            const errorMessage = error.response?.data?.errors?.[0] || error.response?.data?.message || 'İşlem güncellenirken bir hata oluştu.';
+            dispatch(addToast({ message: errorMessage, type: 'error' }));
+            console.error('Update error:', {
+                status: error.response?.status,
+                method: error.config?.method,
+                url: error.config?.url,
+                data: error.response?.data,
+                message: error.message
+            });
         } finally {
             setIsEditing(false);
         }
