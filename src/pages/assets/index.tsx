@@ -7,7 +7,6 @@ import {
     Calendar,
     TrendingUp,
     TrendingDown,
-    AlertCircle,
     X,
     Hash,
     Banknote,
@@ -17,7 +16,6 @@ import {
     ChevronLeft,
     ChevronRight,
     Coins,
-    Edit,
     Wallet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -174,11 +172,6 @@ const AssetsPage: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        setAssetToDelete(id);
-        setIsDeleteModalOpen(true);
-    };
-
     const confirmDelete = async () => {
         if (!assetToDelete) return;
 
@@ -217,21 +210,6 @@ const AssetsPage: React.FC = () => {
             setIsDeleting(null);
             setAssetToDelete(null);
         }
-    };
-
-    const handleEdit = (asset: Asset) => {
-        setAssetToEdit(asset);
-        formik.setValues({
-            currency_id: asset.currency_id.toString(),
-            type: asset.type,
-            amount: asset.amount,
-            price: asset.price,
-            date: formatDateForInput(asset.date),
-            place: asset.place || '',
-            note: asset.note || '',
-        });
-        setSelectedAssetType(asset.currency.type === 'Altın' || asset.currency.type === 'Gold' ? 'Altın' : 'Döviz');
-        setIsEditModalOpen(true);
     };
 
     const handleUpdate = async (values: any) => {

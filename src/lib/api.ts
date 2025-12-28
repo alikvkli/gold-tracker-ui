@@ -33,7 +33,8 @@ api.interceptors.request.use(
         // Debug log for DELETE, PUT, and PATCH requests
         if (config.method === 'delete' || config.method === 'put' || config.method === 'patch') {
             const authHeader = config.headers.Authorization;
-            const tokenPreview = authHeader ? (authHeader.startsWith('Bearer ') ? `Bearer ${authHeader.substring(7, 20)}...` : authHeader.substring(0, 20) + '...') : 'Missing';
+            const authHeaderStr = typeof authHeader === 'string' ? authHeader : String(authHeader || '');
+            const tokenPreview = authHeaderStr ? (authHeaderStr.startsWith('Bearer ') ? `Bearer ${authHeaderStr.substring(7, 20)}...` : authHeaderStr.substring(0, 20) + '...') : 'Missing';
             
             console.log('API Request:', {
                 method: config.method?.toUpperCase(),
