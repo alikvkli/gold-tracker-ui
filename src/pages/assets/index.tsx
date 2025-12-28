@@ -392,61 +392,73 @@ const AssetsPage: React.FC = () => {
 
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+            <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
                 <div className="min-w-0 flex-1">
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-2">Birikimlerim</h1>
-                    <p className="text-sm sm:text-base text-zinc-500 font-medium">Tüm alım/satım işlemlerinizin dökümü ve geçmişi.</p>
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                            <Wallet className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-100 to-amber-300">
+                                Birikimlerim
+                            </h1>
+                        </div>
+                    </div>
+                    <p className="text-sm sm:text-base text-zinc-400 font-medium ml-16 sm:ml-0">Tüm alım/satım işlemlerinizin dökümü ve geçmişi.</p>
                 </div>
-                <Button className="group w-full sm:w-auto shrink-0" onClick={() => {
+                <Button className="group w-full sm:w-auto shrink-0 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-300" onClick={() => {
                     setIsEditModalOpen(false);
                     setAssetToEdit(null);
                     formik.resetForm();
                     setIsModalOpen(true);
                 }}>
-                    <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" />
+                    <Plus className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-300" />
                     Yeni İşlem Ekle
                 </Button>
             </header>
 
             {!isLoading && assets.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl">
-                        <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-500/10 rounded-xl flex items-center justify-center text-amber-500 shrink-0">
-                                <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-amber-500/0 transition-all duration-300"></div>
+                        <div className="relative flex items-center gap-3 sm:gap-4">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-xl sm:rounded-2xl flex items-center justify-center text-amber-400 shrink-0 border border-amber-500/20 shadow-lg shadow-amber-500/10 group-hover:scale-110 transition-transform duration-300">
+                                <Wallet className="w-6 h-6 sm:w-7 sm:h-7" />
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Miktar</p>
-                                <p className="text-xl sm:text-2xl font-black text-white truncate">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Miktar</p>
+                                <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white truncate bg-clip-text text-transparent bg-gradient-to-r from-white to-amber-200">
                                     {totals.totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl">
-                        <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 shrink-0">
-                                <Banknote className="w-5 h-5 sm:w-6 sm:h-6" />
+                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-blue-500/0 transition-all duration-300"></div>
+                        <div className="relative flex items-center gap-3 sm:gap-4">
+                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-xl sm:rounded-2xl flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/10 group-hover:scale-110 transition-transform duration-300">
+                                <Banknote className="w-6 h-6 sm:w-7 sm:h-7" />
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Değer</p>
-                                <p className="text-xl sm:text-2xl font-black text-white truncate">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Değer</p>
+                                <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white truncate bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200">
                                     ₺{totals.totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div className={`bg-zinc-900/50 border rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl sm:col-span-2 lg:col-span-1 ${totals.profitLoss >= 0 ? 'border-green-500/20' : 'border-red-500/20'}`}>
-                        <div className="flex items-center gap-3 sm:gap-4 mb-4">
-                            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 ${totals.profitLoss >= 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                {totals.profitLoss >= 0 ? <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" /> : <TrendingDown className="w-5 h-5 sm:w-6 sm:h-6" />}
+                    <div className={`group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl sm:col-span-2 lg:col-span-1 overflow-hidden transition-all duration-300 hover:shadow-xl ${totals.profitLoss >= 0 ? 'border-green-500/20 hover:border-green-500/30 hover:shadow-green-500/5' : 'border-red-500/20 hover:border-red-500/30 hover:shadow-red-500/5'}`}>
+                        <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-300 ${totals.profitLoss >= 0 ? 'from-green-500/0 to-green-500/0 group-hover:from-green-500/5 group-hover:to-green-500/0' : 'from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/0'}`}></div>
+                        <div className="relative flex items-center gap-3 sm:gap-4">
+                            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border shadow-lg transition-transform duration-300 group-hover:scale-110 ${totals.profitLoss >= 0 ? 'bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border-green-500/20 shadow-green-500/10' : 'bg-gradient-to-br from-red-500/20 to-red-600/20 text-red-400 border-red-500/20 shadow-red-500/10'}`}>
+                                {totals.profitLoss >= 0 ? <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7" /> : <TrendingDown className="w-6 h-6 sm:w-7 sm:h-7" />}
                             </div>
-                            <div className="min-w-0">
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Toplam Kar/Zarar</p>
-                                <p className={`text-xl sm:text-2xl font-black truncate ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Kar/Zarar</p>
+                                <p className={`text-xl sm:text-2xl lg:text-3xl font-black truncate ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                     {totals.profitLoss >= 0 ? '+' : ''}₺{totals.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
-                                <p className={`text-xs font-bold mt-1 ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                <p className={`text-xs sm:text-sm font-bold mt-1 ${totals.profitLoss >= 0 ? 'text-green-400/80' : 'text-red-400/80'}`}>
                                     {totals.profitLossPercent >= 0 ? '+' : ''}{totals.profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                 </p>
                             </div>
@@ -455,19 +467,20 @@ const AssetsPage: React.FC = () => {
                 </div>
             )}
 
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
-                <div className="overflow-x-auto">
+            <div className="relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 via-transparent to-amber-500/0 opacity-50"></div>
+                <div className="relative overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
                         <thead>
-                            <tr className="border-b border-white/5 bg-white/5">
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 hidden md:table-cell">Tür / Tarih</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 md:hidden">Tarih</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500">Varlık</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Miktar</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right hidden md:table-cell">Birim Fiyat</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Toplam</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 hidden lg:table-cell">Yer</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right hidden sm:table-cell">Kar/Zarar</th>
+                            <tr className="border-b border-white/5 bg-gradient-to-r from-white/5 via-white/5 to-white/5">
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 hidden md:table-cell">Tür / Tarih</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 md:hidden">Tarih</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400">Varlık</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Miktar</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden md:table-cell">Birim Fiyat</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Toplam</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 hidden lg:table-cell">Yer</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden sm:table-cell">Kar/Zarar</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -475,46 +488,63 @@ const AssetsPage: React.FC = () => {
                                 <tr>
                                     <td colSpan={7} className="py-20 text-center">
                                         <div className="flex flex-col items-center gap-4">
-                                            <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-                                            <p className="text-zinc-500 font-medium">Veriler yükleniyor...</p>
+                                            <div className="relative">
+                                                <div className="w-16 h-16 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/10">
+                                                    <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+                                                </div>
+                                                <div className="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl animate-pulse"></div>
+                                            </div>
+                                            <p className="text-zinc-400 font-medium">Veriler yükleniyor...</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : assets.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="py-20 text-center">
-                                        <div className="flex flex-col items-center gap-6 opacity-30">
-                                            <History className="w-20 h-20" />
-                                            <p className="text-xl font-medium">Henüz bir işlem kaydınız bulunmuyor.</p>
+                                        <div className="flex flex-col items-center gap-6">
+                                            <div className="relative">
+                                                <div className="w-24 h-24 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded-3xl flex items-center justify-center border border-white/5 shadow-xl">
+                                                    <History className="w-12 h-12 text-zinc-600" />
+                                                </div>
+                                                <div className="absolute inset-0 bg-zinc-500/10 rounded-3xl blur-2xl"></div>
+                                            </div>
+                                            <div>
+                                                <p className="text-xl font-bold text-zinc-300 mb-2">Henüz bir işlem kaydınız bulunmuyor</p>
+                                                <p className="text-sm text-zinc-500">Yeni bir işlem ekleyerek başlayın</p>
+                                            </div>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                assets.map((asset) => {
+                                assets.map((asset, index) => {
                                     const profitLoss = calculateAssetProfitLoss(asset);
                                     return (
-                                        <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+                                        <tr 
+                                            key={asset.id} 
+                                            className="border-b border-white/5 hover:bg-gradient-to-r hover:from-white/5 hover:to-white/0 transition-all duration-200 group"
+                                            style={{ animationDelay: `${index * 50}ms` }}
+                                        >
                                             <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 hidden md:table-cell">
                                                 <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-                                                    <div className={`p-2 sm:p-2.5 lg:p-3 rounded-xl shrink-0 ${asset.type === 'buy' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                                    <div className={`p-2.5 sm:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl shrink-0 border transition-all duration-200 group-hover:scale-105 ${asset.type === 'buy' ? 'bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border-green-500/20 shadow-lg shadow-green-500/5' : 'bg-gradient-to-br from-red-500/20 to-red-600/20 text-red-400 border-red-500/20 shadow-lg shadow-red-500/5'}`}>
                                                         {asset.type === 'buy' ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="font-bold text-xs sm:text-sm truncate">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
-                                                        <p className="text-[10px] sm:text-xs text-zinc-500 flex items-center gap-1 mt-0.5 sm:mt-1">
+                                                        <p className="font-bold text-xs sm:text-sm truncate text-white">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
+                                                        <p className="text-[10px] sm:text-xs text-zinc-400 flex items-center gap-1.5 mt-1">
                                                             <Calendar className="w-3 h-3 shrink-0" /> <span className="truncate">{formatDate(asset.date, dateFormat)}</span>
                                                         </p>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 md:hidden">
-                                                <p className="text-xs sm:text-sm text-zinc-500 flex items-center gap-1">
+                                                <p className="text-xs sm:text-sm text-zinc-400 flex items-center gap-1.5">
                                                     <Calendar className="w-3 h-3 shrink-0" /> <span className="truncate">{formatDate(asset.date, dateFormat)}</span>
                                                 </p>
                                             </td>
                                             <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
                                                 <div className="min-w-0">
-                                                    <p className="font-bold text-xs sm:text-sm text-white truncate">
+                                                    <p className="font-bold text-xs sm:text-sm text-white truncate bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-300">
                                                         {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold')
                                                             ? asset.currency.name
                                                             : asset.currency.code}
@@ -569,8 +599,8 @@ const AssetsPage: React.FC = () => {
                 </div>
 
                 {pagination && pagination.last_page > 1 && (
-                    <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 bg-white/5">
-                        <p className="text-xs text-zinc-500 font-medium text-center sm:text-left">
+                    <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 bg-gradient-to-r from-white/5 via-white/5 to-white/5">
+                        <p className="text-xs sm:text-sm text-zinc-400 font-medium text-center sm:text-left">
                             Toplam <span className="text-white font-bold">{pagination.total}</span> işlemden
                             <span className="text-white font-bold"> {(page - 1) * pagination.per_page + 1} - {Math.min(page * pagination.per_page, pagination.total)}</span> gösteriliyor
                         </p>
@@ -578,7 +608,7 @@ const AssetsPage: React.FC = () => {
                             <button
                                 disabled={page === 1}
                                 onClick={() => setPage(p => p - 1)}
-                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 transition-all"
+                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 hover:border-amber-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
@@ -587,8 +617,10 @@ const AssetsPage: React.FC = () => {
                                     <button
                                         key={i}
                                         onClick={() => setPage(i + 1)}
-                                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all shrink-0 ${page === i + 1 ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20' : 'hover:bg-white/5 text-zinc-500'
-                                            }`}
+                                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-all duration-200 shrink-0 hover:scale-110 ${page === i + 1 
+                                            ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-zinc-900 shadow-lg shadow-amber-500/30 border border-amber-400/20' 
+                                            : 'hover:bg-white/5 text-zinc-400 border border-transparent hover:border-white/10'
+                                        }`}
                                     >
                                         {i + 1}
                                     </button>
@@ -597,7 +629,7 @@ const AssetsPage: React.FC = () => {
                             <button
                                 disabled={page === pagination.last_page}
                                 onClick={() => setPage(p => p + 1)}
-                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 disabled:opacity-30 transition-all"
+                                className="p-2 border border-white/10 rounded-lg hover:bg-white/10 hover:border-amber-500/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>

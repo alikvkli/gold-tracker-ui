@@ -19,11 +19,19 @@
 
 @layer utilities {
     /* Sidebar collapsed state için main content margin ayarı */
-    @media (min-width: 1024px) {
+    /* Küçük ekranlar (mobil) - sadece iconlar görünür */
+    html[data-sidebar-collapsed="true"] .private-layout main {
+        margin-left: 64px !important;
+    }
+    
+    @media (min-width: 640px) {
         html[data-sidebar-collapsed="true"] .private-layout main {
             margin-left: 80px !important;
         }
-        
+    }
+    
+    /* Büyük ekranlar (lg+) - genişletilmiş sidebar */
+    @media (min-width: 1024px) {
         html[data-sidebar-collapsed="false"] .private-layout main {
             margin-left: 256px !important;
         }
