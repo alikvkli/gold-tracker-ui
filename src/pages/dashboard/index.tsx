@@ -79,6 +79,11 @@ const DashboardPage: React.FC = () => {
         return c.type === 'Döviz';
     });
 
+    // Altın adından parantez içindeki kodları temizle (örn: "Ons Altın (ons_altin)" -> "Ons Altın")
+    const cleanCurrencyName = (name: string): string => {
+        return name.replace(/\s*\([^)]*\)\s*/g, '').trim();
+    };
+
     return (
         <div className="space-y-6 lg:space-y-10">
             {/* Header */}
@@ -93,7 +98,6 @@ const DashboardPage: React.FC = () => {
                             <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Tahmini Değer</p>
                             <p className="text-lg sm:text-xl font-black truncate">
                                 ₺{totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
