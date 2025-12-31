@@ -447,15 +447,127 @@ const AssetsPage: React.FC = () => {
 
             <div className="relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 via-transparent to-amber-500/0 opacity-50"></div>
-                <div className="relative overflow-x-auto">
+                
+                {/* Mobile Card View - md'den küçük ekranlarda gösterilecek */}
+                <div className="relative md:hidden p-4 space-y-3">
+                    {isLoading ? (
+                        <div className="py-20 text-center">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="relative">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/10">
+                                        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+                                    </div>
+                                    <div className="absolute inset-0 bg-amber-500/20 rounded-2xl blur-xl animate-pulse"></div>
+                                </div>
+                                <p className="text-zinc-400 font-medium">Veriler yükleniyor...</p>
+                            </div>
+                        </div>
+                    ) : assets.length === 0 ? (
+                        <div className="py-20 text-center">
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="relative">
+                                    <div className="w-24 h-24 bg-gradient-to-br from-zinc-800/50 to-zinc-900/50 rounded-3xl flex items-center justify-center border border-white/5 shadow-xl">
+                                        <History className="w-12 h-12 text-zinc-600" />
+                                    </div>
+                                    <div className="absolute inset-0 bg-zinc-500/10 rounded-3xl blur-2xl"></div>
+                                </div>
+                                <div>
+                                    <p className="text-xl font-bold text-zinc-300 mb-2">Henüz bir işlem kaydınız bulunmuyor</p>
+                                    <p className="text-sm text-zinc-500">Yeni bir işlem ekleyerek başlayın</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        assets.map((asset, index) => {
+                            const profitLoss = calculateAssetProfitLoss(asset);
+                            return (
+                                <div
+                                    key={asset.id}
+                                    className="bg-gradient-to-br from-zinc-800/60 to-zinc-900/40 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all duration-200 group"
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                >
+                                    {/* Header: Tür ve Tarih */}
+                                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-white/5">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2.5 rounded-xl shrink-0 border transition-all duration-200 ${asset.type === 'buy' ? 'bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border-green-500/20 shadow-lg shadow-green-500/5' : 'bg-gradient-to-br from-red-500/20 to-red-600/20 text-red-400 border-red-500/20 shadow-lg shadow-red-500/5'}`}>
+                                                {asset.type === 'buy' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm text-white">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
+                                                <p className="text-xs text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                                                    <Calendar className="w-3 h-3 shrink-0" />
+                                                    <span>{formatDate(asset.date, dateFormat)}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {asset.type === 'buy' && (
+                                            <div className="flex flex-col items-end">
+                                                <span className={`font-black text-sm ${profitLoss.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                    {profitLoss.profitLoss >= 0 ? '+' : ''}₺{profitLoss.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                </span>
+                                                <span className={`text-xs font-bold ${profitLoss.profitLoss >= 0 ? 'text-green-400/70' : 'text-red-400/70'}`}>
+                                                    {profitLoss.profitLossPercent >= 0 ? '+' : ''}{profitLoss.profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Varlık Adı */}
+                                    <div className="mb-3">
+                                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Varlık</p>
+                                        <p className="font-bold text-base text-white bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-300">
+                                            {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold')
+                                                ? asset.currency.name
+                                                : asset.currency.code}
+                                        </p>
+                                    </div>
+
+                                    {/* Miktar ve Fiyat Bilgileri */}
+                                    <div className="grid grid-cols-2 gap-3 mb-3">
+                                        <div>
+                                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Miktar</p>
+                                            <p className="font-bold text-sm text-white">
+                                                {parseFloat(asset.amount).toLocaleString('tr-TR')}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Birim Fiyat</p>
+                                            <p className="text-sm text-zinc-400 font-medium">
+                                                ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Toplam ve Yer */}
+                                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                                        <div>
+                                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam</p>
+                                            <p className={`font-black text-lg ${asset.type === 'buy' ? 'text-white' : 'text-zinc-400'}`}>
+                                                ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                            </p>
+                                        </div>
+                                        {asset.place && (
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="w-4 h-4 text-zinc-500 shrink-0" />
+                                                <span className="text-xs text-zinc-400 font-medium">{asset.place}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+
+                {/* Desktop Table View - md ve üzeri ekranlarda gösterilecek */}
+                <div className="relative hidden md:block overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
                         <thead>
                             <tr className="border-b border-white/5 bg-gradient-to-r from-white/5 via-white/5 to-white/5">
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 hidden md:table-cell">Tür / Tarih</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 md:hidden">Tarih</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400">Tür / Tarih</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400">Varlık</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Miktar</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden md:table-cell">Birim Fiyat</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Birim Fiyat</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Toplam</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 hidden lg:table-cell">Yer</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden sm:table-cell">Kar/Zarar</th>
@@ -502,7 +614,7 @@ const AssetsPage: React.FC = () => {
                                             className="border-b border-white/5 hover:bg-gradient-to-r hover:from-white/5 hover:to-white/0 transition-all duration-200 group"
                                             style={{ animationDelay: `${index * 50}ms` }}
                                         >
-                                            <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 hidden md:table-cell">
+                                            <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
                                                 <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
                                                     <div className={`p-2.5 sm:p-3 lg:p-3.5 rounded-xl sm:rounded-2xl shrink-0 border transition-all duration-200 group-hover:scale-105 ${asset.type === 'buy' ? 'bg-gradient-to-br from-green-500/20 to-green-600/20 text-green-400 border-green-500/20 shadow-lg shadow-green-500/5' : 'bg-gradient-to-br from-red-500/20 to-red-600/20 text-red-400 border-red-500/20 shadow-lg shadow-red-500/5'}`}>
                                                         {asset.type === 'buy' ? <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" /> : <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -514,11 +626,6 @@ const AssetsPage: React.FC = () => {
                                                         </p>
                                                     </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 md:hidden">
-                                                <p className="text-xs sm:text-sm text-zinc-400 flex items-center gap-1.5">
-                                                    <Calendar className="w-3 h-3 shrink-0" /> <span className="truncate">{formatDate(asset.date, dateFormat)}</span>
-                                                </p>
                                             </td>
                                             <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6">
                                                 <div className="min-w-0">
@@ -534,7 +641,7 @@ const AssetsPage: React.FC = () => {
                                                     {parseFloat(asset.amount).toLocaleString('tr-TR')}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-right hidden md:table-cell">
+                                            <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-right">
                                                 <span className="text-xs sm:text-sm text-zinc-400 font-medium">
                                                     ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                 </span>
