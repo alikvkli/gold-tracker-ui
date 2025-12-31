@@ -53,11 +53,11 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <img 
               src="/images/logo.png" 
-              alt="Biriktirerek Logo" 
+              alt="Biriktirerek.com Logo" 
               className="w-10 h-10 object-contain"
             />
             <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
-              Biriktirerek
+              Biriktirerek.com
             </span>
           </div>
           <div className="flex items-center gap-6">
@@ -198,13 +198,13 @@ export default function HomePage() {
                 <div className="relative">
                   <img 
                     src="/images/logo.png" 
-                    alt="Biriktirerek Logo" 
+                    alt="Biriktirerek.com Logo" 
                     className="w-12 h-12 sm:w-14 sm:h-14 object-contain group-hover:scale-110 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
                 </div>
                 <span className="font-black text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">
-                  Biriktirerek
+                  Biriktirerek.com
                 </span>
               </div>
               <p className="text-sm sm:text-base text-zinc-400 text-center max-w-md">
@@ -268,7 +268,7 @@ export default function HomePage() {
             {/* Copyright */}
             <div className="flex flex-col items-center gap-2 pt-4 border-t border-white/5 w-full">
               <p className="text-xs sm:text-sm text-zinc-500 text-center">
-                © {new Date().getFullYear()} <span className="text-zinc-300 font-semibold">Biriktirerek</span>. Tüm Hakları Saklıdır.
+                © {new Date().getFullYear()} <span className="text-zinc-300 font-semibold">Biriktirerek.com</span>. Tüm Hakları Saklıdır.
               </p>
               <p className="text-xs text-zinc-600">
                 Altın birikimlerinizi güvenle takip edin

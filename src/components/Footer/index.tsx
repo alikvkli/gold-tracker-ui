@@ -18,11 +18,11 @@ const Footer: React.FC = () => {
                     <div className="flex items-center gap-2 group">
                         <img 
                             src="/images/logo.png" 
-                            alt="Biriktirerek Logo" 
+                            alt="Biriktirerek.com Logo" 
                             className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                         />
                         <span className="text-lg sm:text-xl font-black text-white tracking-tight">
-                            Biriktirerek
+                            Biriktirerek.com
                         </span>
                     </div>
 
@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
                     <div className="flex items-center gap-2 text-zinc-500">
                         <Copyright className="w-3.5 h-3.5" />
                         <span className="text-xs sm:text-sm font-medium">
-                            {currentYear} <span className="text-zinc-300 font-bold">Biriktirerek</span> - Tüm hakları saklıdır
+                            {currentYear} <span className="text-zinc-300 font-bold">Biriktirerek.com</span> - Tüm hakları saklıdır
                         </span>
                     </div>
                 </div>
