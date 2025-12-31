@@ -6,7 +6,9 @@ import {
   ArrowRight,
   ChevronRight,
   Activity,
-  Wallet
+  Wallet,
+  Mail,
+  MapPin
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
@@ -181,37 +183,97 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-white/5 bg-zinc-950 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-12">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/images/logo.png" 
-              alt="Biriktirerek Logo" 
-              className="w-10 h-10 object-contain"
-            />
-            <span className="font-bold text-lg tracking-tight">Biriktirerek</span>
-          </div>
+      <footer className="relative py-16 sm:py-20 border-t border-white/5 bg-gradient-to-b from-zinc-950 via-zinc-950 to-zinc-900 overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl"></div>
+        </div>
 
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
-            <a href="#features" className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors">Özellikler</a>
-            <a 
-              href="https://play.google.com/store/apps/details?id=com.fatalsoft.altin_takip" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-              </svg>
-              Play Store
-            </a>
-            <a href="mailto:fatalsoft.inc@gmail.com" className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors">İletişim</a>
-          </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-8 sm:gap-12">
+            {/* Logo and Brand */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-3 group">
+                <div className="relative">
+                  <img 
+                    src="/images/logo.png" 
+                    alt="Biriktirerek Logo" 
+                    className="w-12 h-12 sm:w-14 sm:h-14 object-contain group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
+                </div>
+                <span className="font-black text-xl sm:text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">
+                  Biriktirerek
+                </span>
+              </div>
+              <p className="text-sm sm:text-base text-zinc-400 text-center max-w-md">
+                Altın birikimlerinizi profesyonelce takip edin ve yatırımlarınızı yönetin.
+              </p>
+            </div>
 
-          <div className="text-center">
-            <p className="text-zinc-600 text-sm">
-              © {new Date().getFullYear()} Biriktirerek. Tüm Hakları Saklıdır.
-            </p>
+            {/* Links and Actions */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8 w-full">
+              {/* Navigation Links */}
+              <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+                <a 
+                  href="#features" 
+                  className="px-4 py-2 text-zinc-400 hover:text-amber-400 text-sm font-medium transition-all hover:bg-white/5 rounded-lg"
+                >
+                  Özellikler
+                </a>
+                <a 
+                  href="mailto:fatalsoft.inc@gmail.com" 
+                  className="px-4 py-2 text-zinc-400 hover:text-amber-400 text-sm font-medium transition-all hover:bg-white/5 rounded-lg flex items-center gap-2"
+                >
+                  <Mail className="w-4 h-4" />
+                  İletişim
+                </a>
+              </div>
+
+              {/* Play Store Button */}
+              <a 
+                href="https://play.google.com/store/apps/details?id=com.fatalsoft.altin_takip" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/20 hover:border-amber-500/40 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/20"
+              >
+                <svg className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                </svg>
+                <div className="flex flex-col">
+                  <span className="text-xs text-zinc-400 font-medium">Mobil Uygulama</span>
+                  <span className="text-sm font-bold text-amber-400">Play Store'da İndir</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </div>
+
+            {/* Contact Info */}
+            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-6 border-t border-white/5 w-full">
+              <a 
+                href="mailto:fatalsoft.inc@gmail.com"
+                className="flex items-center gap-2 px-4 py-2 text-zinc-400 hover:text-amber-400 text-sm transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                <span>fatalsoft.inc@gmail.com</span>
+              </a>
+              <div className="hidden sm:block w-1 h-1 rounded-full bg-zinc-600"></div>
+              <div className="flex items-center gap-2 px-4 py-2 text-zinc-400 text-sm">
+                <MapPin className="w-4 h-4" />
+                <span>Kocaeli, Gebze</span>
+              </div>
+            </div>
+
+            {/* Copyright */}
+            <div className="flex flex-col items-center gap-2 pt-4 border-t border-white/5 w-full">
+              <p className="text-xs sm:text-sm text-zinc-500 text-center">
+                © {new Date().getFullYear()} <span className="text-zinc-300 font-semibold">Biriktirerek</span>. Tüm Hakları Saklıdır.
+              </p>
+              <p className="text-xs text-zinc-600">
+                Altın birikimlerinizi güvenle takip edin
+              </p>
+            </div>
           </div>
         </div>
       </footer>
