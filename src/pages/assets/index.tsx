@@ -16,7 +16,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Coins,
-    Wallet
+    Wallet,
+    Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -432,7 +433,15 @@ const AssetsPage: React.FC = () => {
                                 {totals.profitLoss >= 0 ? <TrendingUp className="w-6 h-6 sm:w-7 sm:h-7" /> : <TrendingDown className="w-6 h-6 sm:w-7 sm:h-7" />}
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Kar/Zarar</p>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Toplam Kar/Zarar</p>
+                                    <div className="group relative">
+                                        <Info className="w-3 h-3 text-zinc-500 cursor-help" />
+                                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-800 border border-white/10 rounded-lg text-xs text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+                                            Tahmini rakamlar. Gerçek değerler piyasa koşullarına göre değişebilir.
+                                        </div>
+                                    </div>
+                                </div>
                                 <p className={`text-xl sm:text-2xl lg:text-3xl font-black truncate ${totals.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                     {totals.profitLoss >= 0 ? '+' : ''}₺{totals.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
@@ -501,7 +510,11 @@ const AssetsPage: React.FC = () => {
                                             </div>
                                         </div>
                                         {asset.type === 'buy' && (
-                                            <div className="flex flex-col items-end">
+                                            <div className="flex flex-col items-end gap-1">
+                                                <div className="flex items-center gap-1">
+                                                    <Info className="w-3 h-3 text-zinc-500/60" />
+                                                    <span className="text-[9px] text-zinc-500 italic">Tahmini</span>
+                                                </div>
                                                 <span className={`font-black text-sm ${profitLoss.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                                     {profitLoss.profitLoss >= 0 ? '+' : ''}₺{profitLoss.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                 </span>
@@ -570,7 +583,15 @@ const AssetsPage: React.FC = () => {
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Birim Fiyat</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Toplam</th>
                                 <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 hidden lg:table-cell">Yer</th>
-                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden sm:table-cell">Kar/Zarar</th>
+                                <th className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-xs font-black uppercase tracking-widest text-zinc-400 text-right hidden sm:table-cell">
+                                    <div className="flex items-center justify-end gap-1.5 group relative">
+                                        <span>Kar/Zarar</span>
+                                        <Info className="w-3 h-3 text-zinc-500/60 cursor-help" />
+                                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-800 border border-white/10 rounded-lg text-xs text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+                                            Tahmini rakamlar. Gerçek değerler piyasa koşullarına göre değişebilir.
+                                        </div>
+                                    </div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -663,7 +684,14 @@ const AssetsPage: React.FC = () => {
                                             </td>
                                             <td className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 text-right hidden sm:table-cell">
                                                 {asset.type === 'buy' ? (
-                                                    <div className="flex flex-col items-end">
+                                                    <div className="flex flex-col items-end gap-1">
+                                                        <div className="flex items-center gap-1 group relative">
+                                                            <Info className="w-3 h-3 text-zinc-500/60 cursor-help" />
+                                                            <span className="text-[9px] text-zinc-500 italic">Tahmini</span>
+                                                            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-800 border border-white/10 rounded-lg text-xs text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+                                                                Tahmini rakamlar. Gerçek değerler piyasa koşullarına göre değişebilir.
+                                                            </div>
+                                                        </div>
                                                         <span className={`font-black text-xs sm:text-sm ${profitLoss.profitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                                                             {profitLoss.profitLoss >= 0 ? '+' : ''}₺{profitLoss.profitLoss.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </span>
