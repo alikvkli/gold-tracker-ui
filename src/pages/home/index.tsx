@@ -49,11 +49,13 @@ export default function HomePage() {
       <nav className="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-zinc-900 shadow-xl shadow-amber-600/20">
-              <Wallet className="w-6 h-6" />
-            </div>
+            <img 
+              src="/images/logo.png" 
+              alt="Biriktirerek Logo" 
+              className="w-10 h-10 object-contain"
+            />
             <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-amber-200 to-amber-500">
-              Altın Cüzdan
+              Biriktirerek
             </span>
           </div>
           <div className="flex items-center gap-6">
@@ -182,22 +184,33 @@ export default function HomePage() {
       <footer className="py-20 border-t border-white/5 bg-zinc-950 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-12">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-zinc-900 shadow-lg">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">Altın Cüzdan</span>
+            <img 
+              src="/images/logo.png" 
+              alt="Biriktirerek Logo" 
+              className="w-10 h-10 object-contain"
+            />
+            <span className="font-bold text-lg tracking-tight">Biriktirerek</span>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-10">
-            <a href="#" className="text-zinc-500 hover:text-white text-sm font-medium transition-colors">Ana Sayfa</a>
-            <a href="#" className="text-zinc-500 hover:text-white text-sm font-medium transition-colors">Özellikler</a>
-            <a href="#" className="text-zinc-500 hover:text-white text-sm font-medium transition-colors">Güvenlik</a>
-            <a href="#" className="text-zinc-500 hover:text-white text-sm font-medium transition-colors">İletişim</a>
+          <div className="flex flex-wrap justify-center gap-6 sm:gap-10">
+            <a href="#features" className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors">Özellikler</a>
+            <a 
+              href="https://play.google.com/store/apps/details?id=com.fatalsoft.altin_takip" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.6 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+              </svg>
+              Play Store
+            </a>
+            <a href="mailto:fatalsoft.inc@gmail.com" className="text-zinc-500 hover:text-amber-400 text-sm font-medium transition-colors">İletişim</a>
           </div>
 
           <div className="text-center">
             <p className="text-zinc-600 text-sm">
-              © 2026 Altın Cüzdan. Tüm Hakları Saklıdır.
+              © {new Date().getFullYear()} Biriktirerek. Tüm Hakları Saklıdır.
             </p>
           </div>
         </div>
