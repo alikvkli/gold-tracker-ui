@@ -6,7 +6,6 @@ import {
   ArrowRight,
   ChevronRight,
   Activity,
-  Wallet,
   Mail,
   MapPin
 } from "lucide-react";
