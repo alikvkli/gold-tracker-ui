@@ -12,7 +12,8 @@ const ForgotPasswordPage = lazy(() => import("@/pages/auth/forgot-password/index
 const ResetPasswordPage = lazy(() => import("@/pages/auth/reset-password/index"));
 
 const DashboardPage = lazy(() => import("@/pages/dashboard/index"));
-const AssetsPage = lazy(() => import("@/pages/assets/index"));
+const AssetsPage = lazy(() => import("@/pages/assets/index")); // Refactored to Savings
+const TransactionsPage = lazy(() => import("@/pages/transactions/index"));
 const ProfilePage = lazy(() => import("@/pages/profile/index"));
 
 import PrivateLayout from "@/layouts/PrivateLayout/index";
@@ -62,6 +63,10 @@ export const router = createBrowserRouter([
                     {
                         path: PATHS.ASSETS,
                         element: <AssetsPage />
+                    },
+                    {
+                        path: PATHS.TRANSACTIONS,
+                        element: <TransactionsPage />
                     },
                     {
                         path: PATHS.PROFILE,

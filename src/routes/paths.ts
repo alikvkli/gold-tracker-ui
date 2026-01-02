@@ -7,6 +7,7 @@ export const PATHS = {
     RESET_PASSWORD: "/reset-password",
     DASHBOARD: "/dashboard",
     ASSETS: "/assets",
+    TRANSACTIONS: "/transactions",
     PROFILE: "/profile",
     NOT_FOUND: "*",
 } as const;

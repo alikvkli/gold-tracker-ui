@@ -67,7 +67,8 @@ const Sidebar: React.FC = () => {
 
     const navItems = [
         { path: PATHS.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
-        { path: PATHS.ASSETS, label: 'Varlıklarım', icon: History },
+        { path: PATHS.ASSETS, label: 'Varlıklarım', icon: Wallet },
+        { path: PATHS.TRANSACTIONS, label: 'İşlemler', icon: History },
         { path: PATHS.PROFILE, label: 'Profil', icon: UserIcon },
     ];
 
