@@ -369,11 +369,15 @@ const TransactionsPage: React.FC = () => {
                                                 ? (cur.type === 'Altın' || cur.type === 'Gold')
                                                 : cur.type === 'Döviz';
 
-                                            // If selling, only show owned assets (optional, but good UX)
-                                            // For now, listing all but validation will block.
-                                            // Or better: Filter distinct list for Sell tab?
-                                            // Let's stick to simple filtering.
-                                            return matchesType;
+                                            if (!matchesType) return false;
+
+                                            // If selling, only show owned assets
+                                            if (activeTab === 'sell') {
+                                                const balance = balances.get(cur.id) || 0;
+                                                return balance > 0;
+                                            }
+
+                                            return true;
                                         })
                                         .map(cur => {
                                             const balance = balances.get(cur.id) || 0;
