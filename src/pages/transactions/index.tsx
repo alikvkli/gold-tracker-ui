@@ -1,30 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     History,
-    Plus,
     Trash2,
-    Loader2,
-    Calendar,
     TrendingUp,
     TrendingDown,
-    X,
     Hash,
     Banknote,
     MapPin,
     StickyNote,
-    Shield,
     ChevronLeft,
     ChevronRight,
     Coins,
-    Wallet,
-    Info,
     ArrowRightLeft
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
-import { PATHS } from '../../routes/paths';
+
 import { setEncryptionKey } from '../../features/app';
 import { addToast } from '../../features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
@@ -70,7 +63,7 @@ interface Pagination {
 }
 
 const TransactionsPage: React.FC = () => {
-    const navigate = useNavigate();
+
     const dispatch = useAppDispatch();
 
     const [assets, setAssets] = useState<Asset[]>([]);
@@ -289,9 +282,7 @@ const TransactionsPage: React.FC = () => {
         }
     }, [formik.values.currency_id, formik.values.type, currencies]);
 
-    const ownedCurrencies = useMemo(() => {
-        return currencies.filter(c => (balances.get(c.id) || 0) > 0);
-    }, [currencies, balances]);
+
 
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
@@ -534,7 +525,10 @@ const TransactionsPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <button
-                                                onClick={() => setAssetToDelete(asset.id) || setIsDeleteModalOpen(true)}
+                                                onClick={() => {
+                                                    setAssetToDelete(asset.id);
+                                                    setIsDeleteModalOpen(true);
+                                                }}
                                                 className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
                                             >
                                                 <Trash2 size={16} />
