@@ -23,6 +23,7 @@ import { addToast } from '../../features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import api from '../../lib/api';
 import { formatDate, formatNumericValue, parseNumericValue } from '../../lib/date';
+import { getAssetUnit } from '../../lib/utils';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 
@@ -545,7 +546,9 @@ const TransactionsPage: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
                                     <div>
                                         <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
-                                        <p className="text-white font-medium">{parseFloat(asset.amount).toLocaleString('tr-TR')}</p>
+                                        <p className="text-white font-medium">
+                                            {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
+                                        </p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs text-zinc-500 mb-0.5">Birim Fiyat</p>
@@ -600,7 +603,7 @@ const TransactionsPage: React.FC = () => {
                                             {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold') ? asset.currency.name : asset.currency.code}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-right text-zinc-300">
-                                            {parseFloat(asset.amount).toLocaleString('tr-TR')}
+                                            {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-right text-zinc-300">
                                             ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}

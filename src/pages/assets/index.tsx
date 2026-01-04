@@ -20,6 +20,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks';
 import api from '../../lib/api';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
+import { getAssetUnit } from '../../lib/utils';
 
 
 interface Asset {
@@ -216,6 +217,7 @@ const AssetsPage: React.FC = () => {
         portfolio.forEach((value, key) => bal.set(key, value.amount));
         return bal;
     }, [portfolio]);
+
     const totals = calculateTotals();
 
     const ownedCurrencies = useMemo(() => {
@@ -357,13 +359,15 @@ const AssetsPage: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="block text-2xl font-black text-white">{amount.toLocaleString('tr-TR')}</span>
+                                                    <span className="block text-2xl font-black text-white">
+                                                        {amount.toLocaleString('tr-TR')} <span className="text-base font-medium text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
+                                                    </span>
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
                                                 <div>
-                                                    <p className="text-xs text-zinc-500 mb-0.5">Ort. Fiyat</p>
+                                                    <p className="text-xs text-zinc-500 mb-0.5">Maliyet</p>
                                                     <p className="text-zinc-300 font-medium">₺{avgPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                                 </div>
                                                 <div className="text-right">
@@ -402,7 +406,7 @@ const AssetsPage: React.FC = () => {
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400">Varlık</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400">Yer</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Miktar</th>
-                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Ort. Fiyat</th>
+                                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Maliyet</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Güncel Fiyat</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Değer</th>
                                         <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">K/Z</th>
@@ -443,7 +447,9 @@ const AssetsPage: React.FC = () => {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <span className="text-sm font-bold text-white">{amount.toLocaleString('tr-TR')}</span>
+                                                        <span className="text-sm font-bold text-white">
+                                                            {amount.toLocaleString('tr-TR')} <span className="text-xs font-normal text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
+                                                        </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <span className="text-sm text-zinc-400">₺{avgPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
@@ -497,43 +503,41 @@ const AssetsPage: React.FC = () => {
                 )}
             </div>
 
-            {
-                isSecurityModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/90 backdrop-blur-md">
-                        <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-2xl sm:rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 lg:p-10 overflow-hidden relative">
-                            <div className="text-center relative z-10">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500/10 border border-amber-500/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-xl shadow-amber-500/5">
-                                    <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" />
-                                </div>
-                                <h2 className="text-2xl sm:text-3xl font-black mb-4 tracking-tight">Güvenlik Kontrolü</h2>
-                                <form onSubmit={handleVerifyKey} className="space-y-4 sm:space-y-6">
-                                    <Input
-                                        label="Şifreleme Anahtarı"
-                                        type="password"
-                                        placeholder="••••••••"
-                                        value={securityKey}
-                                        onChange={(e) => setSecurityKey(e.target.value)}
-                                        autoFocus
-                                    />
-                                    <div className="flex flex-col gap-3 sm:gap-4">
-                                        <Button type="submit" className="w-full" isLoading={isVerifying}>
-                                            Doğrula ve Eriş
-                                        </Button>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate(PATHS.DASHBOARD)}
-                                            className="text-xs font-bold text-zinc-500 hover:text-white transition-all uppercase tracking-widest py-2"
-                                        >
-                                            Geri Dön
-                                        </button>
-                                    </div>
-                                </form>
+            {isSecurityModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/90 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-2xl sm:rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 lg:p-10 overflow-hidden relative">
+                        <div className="text-center relative z-10">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500/10 border border-amber-500/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-xl shadow-amber-500/5">
+                                <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" />
                             </div>
+                            <h2 className="text-2xl sm:text-3xl font-black mb-4 tracking-tight">Güvenlik Kontrolü</h2>
+                            <form onSubmit={handleVerifyKey} className="space-y-4 sm:space-y-6">
+                                <Input
+                                    label="Şifreleme Anahtarı"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={securityKey}
+                                    onChange={(e) => setSecurityKey(e.target.value)}
+                                    autoFocus
+                                />
+                                <div className="flex flex-col gap-3 sm:gap-4">
+                                    <Button type="submit" className="w-full" isLoading={isVerifying}>
+                                        Doğrula ve Eriş
+                                    </Button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(PATHS.DASHBOARD)}
+                                        className="text-xs font-bold text-zinc-500 hover:text-white transition-all uppercase tracking-widest py-2"
+                                    >
+                                        Geri Dön
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 };
 
