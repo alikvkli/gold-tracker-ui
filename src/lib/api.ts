@@ -1,4 +1,5 @@
 import axios from 'axios';
+import CryptoJS from 'crypto-js';
 import { store } from '../store';
 
 const api = axios.create({
@@ -23,6 +24,23 @@ api.interceptors.request.use(
 
         if (encryptionKey) {
             config.headers['X-Encryption-Key'] = encryptionKey;
+
+            // Encrypt Payload if it exists and is an object/array
+            if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+                try {
+                    const jsonPayload = JSON.stringify(config.data);
+                    const encrypted = CryptoJS.AES.encrypt(jsonPayload, encryptionKey).toString();
+
+                    config.data = { encrypted_payload: encrypted };
+                    config.headers['X-Encrypted-Body'] = 'true';
+                } catch (error) {
+                    console.error('Payload encryption failed:', error);
+                    // Decide whether to fail or send unencrypted. 
+                    // Sending unencrypted might leak data, so preventing request might be safer, 
+                    // but for resilience we might just log it. 
+                    // Let's stick to safe failure? No, let's allow it but warn.
+                }
+            }
         }
 
         // Ensure Accept header is set
@@ -35,7 +53,7 @@ api.interceptors.request.use(
             const authHeader = config.headers.Authorization;
             const authHeaderStr = typeof authHeader === 'string' ? authHeader : String(authHeader || '');
             const tokenPreview = authHeaderStr ? (authHeaderStr.startsWith('Bearer ') ? `Bearer ${authHeaderStr.substring(7, 20)}...` : authHeaderStr.substring(0, 20) + '...') : 'Missing';
-            
+
             console.log('API Request:', {
                 method: config.method?.toUpperCase(),
                 url: config.url,
@@ -66,7 +84,7 @@ api.interceptors.response.use(
             // Optional: Auto logout on 401
             // store.dispatch(logout());
         }
-        
+
         // Log 403 errors in detail
         if (error.response?.status === 403) {
             const state = store.getState();
@@ -97,7 +115,7 @@ api.interceptors.response.use(
                 fullErrorResponse: error.response
             });
         }
-        
+
         return Promise.reject(error);
     }
 );
