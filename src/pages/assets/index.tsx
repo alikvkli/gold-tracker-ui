@@ -256,9 +256,9 @@ const AssetsPage: React.FC = () => {
                                 <Wallet className="w-6 h-6 sm:w-7 sm:h-7" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Miktar</p>
+                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Harcama</p>
                                 <p className="text-xl sm:text-2xl lg:text-3xl font-black text-white truncate bg-clip-text text-transparent bg-gradient-to-r from-white to-amber-200">
-                                    {totals.totalAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ₺{totals.totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
                         </div>
