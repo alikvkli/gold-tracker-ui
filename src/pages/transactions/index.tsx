@@ -479,8 +479,67 @@ const TransactionsPage: React.FC = () => {
                 </div>
                 {/* ... (Existing table code simplified for brevity, assume similar to current AssetsPage but without P/L focus maybe) ... */}
                 {/* Re-using the exact table from AssetsPage is fine, just pasting key parts below */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[800px] lg:min-w-0">
+                {/* Mobile Card View (Visible < lg) */}
+                <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
+                    {isLoading ? (
+                        <div className="col-span-full py-10 text-center text-zinc-500">Yükleniyor...</div>
+                    ) : assets.length === 0 ? (
+                        <div className="col-span-full py-10 text-center text-zinc-500">İşlem bulunamadı.</div>
+                    ) : (
+                        assets.map((asset) => (
+                            <div key={asset.id} className="bg-zinc-800/40 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all">
+                                <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-lg ${asset.type === 'buy' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
+                                            {asset.type === 'buy' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                                        </div>
+                                        <div>
+                                            <p className={`font-bold text-sm ${asset.type === 'buy' ? 'text-green-400' : 'text-red-400'}`}>
+                                                {asset.type === 'buy' ? 'Alım İşlemi' : 'Satış İşlemi'}
+                                            </p>
+                                            <p className="text-sm font-bold text-white mt-0.5">
+                                                {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold') ? asset.currency.name : asset.currency.code}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-zinc-500 mb-1">{formatDate(asset.date, dateFormat)}</p>
+                                        <button
+                                            onClick={() => {
+                                                setAssetToDelete(asset.id);
+                                                setIsDeleteModalOpen(true);
+                                            }}
+                                            className="p-1.5 text-zinc-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                                    <div>
+                                        <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
+                                        <p className="text-white font-medium">{parseFloat(asset.amount).toLocaleString('tr-TR')}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-zinc-500 mb-0.5">Birim Fiyat</p>
+                                        <p className="text-zinc-300 font-medium">₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+                                    </div>
+                                    <div className="col-span-2 pt-3 mt-1 border-t border-white/5 flex items-center justify-between">
+                                        <p className="text-xs text-zinc-500">Toplam Tutar</p>
+                                        <p className="text-base font-bold text-white">
+                                            ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table View (Visible >= lg) */}
+                <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
                         {/* Table Header Same as before */}
                         <thead>
                             <tr className="border-b border-white/5 bg-white/5">
