@@ -218,6 +218,11 @@ const TransactionsPage: React.FC = () => {
         }
     };
 
+    // External Sale State
+    const [isExternalSale, setIsExternalSale] = useState(false);
+
+
+
     const formik = useFormik({
         initialValues: {
             currency_id: '',
@@ -236,8 +241,8 @@ const TransactionsPage: React.FC = () => {
             date: Yup.string().required('Tarih zorunludur'),
         }),
         onSubmit: async (values) => {
-            if (values.type === 'sell') {
-                // Check balance
+            if (values.type === 'sell' && !isExternalSale) {
+                // Check balance only if NOT external sale
                 const currentBalance = balances.get(parseInt(values.currency_id)) || 0;
                 if (parseFloat(String(values.amount)) > currentBalance) {
                     dispatch(addToast({ message: `Yetersiz bakiye. Mevcut: ${currentBalance}`, type: 'error' }));
@@ -268,6 +273,8 @@ const TransactionsPage: React.FC = () => {
     useEffect(() => {
         if (!isEditModalOpen) {
             formik.setFieldValue('type', activeTab);
+            // Reset external sale when switching tabs
+            if (activeTab === 'buy') setIsExternalSale(false);
         }
     }, [activeTab, isEditModalOpen]);
 
@@ -282,10 +289,9 @@ const TransactionsPage: React.FC = () => {
         }
     }, [formik.values.currency_id, formik.values.type, currencies]);
 
-
-
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
+            {/* Header omitted from snippet, assume existing */}
             <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
@@ -344,6 +350,26 @@ const TransactionsPage: React.FC = () => {
                                 </button>
                             </div>
 
+                            {/* External Sale Checkbox (Only on Sell tab) */}
+                            {activeTab === 'sell' && (
+                                <div className="flex items-center gap-2 mb-2 px-1">
+                                    <input
+                                        type="checkbox"
+                                        id="externalSale"
+                                        checked={isExternalSale}
+                                        onChange={(e) => {
+                                            setIsExternalSale(e.target.checked);
+                                            // Optional: reset currency selection if switching modes
+                                            formik.setFieldValue('currency_id', '');
+                                        }}
+                                        className="w-4 h-4 rounded border-gray-600 bg-zinc-800 text-amber-500 focus:ring-amber-500/50"
+                                    />
+                                    <label htmlFor="externalSale" className="text-xs font-medium text-zinc-400 select-none cursor-pointer hover:text-zinc-300">
+                                        Portföyde olmayan varlık (Harici Satış)
+                                    </label>
+                                </div>
+                            )}
+
                             {/* Currency Select */}
                             <div className="relative">
                                 <select
@@ -362,8 +388,8 @@ const TransactionsPage: React.FC = () => {
 
                                             if (!matchesType) return false;
 
-                                            // If selling, only show owned assets
-                                            if (activeTab === 'sell') {
+                                            // If selling AND NOT external, only show owned assets
+                                            if (activeTab === 'sell' && !isExternalSale) {
                                                 const balance = balances.get(cur.id) || 0;
                                                 return balance > 0;
                                             }
@@ -372,13 +398,13 @@ const TransactionsPage: React.FC = () => {
                                         })
                                         .map(cur => {
                                             const balance = balances.get(cur.id) || 0;
-                                            // If Sell tab, show balance info
-                                            const label = activeTab === 'sell'
+                                            // If Sell tab AND NOT external, show balance info
+                                            const label = (activeTab === 'sell' && !isExternalSale)
                                                 ? `${selectedAssetType === 'Altın' ? cur.name : cur.code} (Mevcut: ${balance})`
                                                 : (selectedAssetType === 'Altın' ? cur.name : cur.code);
 
                                             return (
-                                                <option key={cur.id} value={cur.id} disabled={activeTab === 'sell' && balance <= 0}>
+                                                <option key={cur.id} value={cur.id} disabled={activeTab === 'sell' && !isExternalSale && balance <= 0}>
                                                     {label}
                                                 </option>
                                             );
