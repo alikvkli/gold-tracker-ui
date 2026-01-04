@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import { PATHS } from '@/routes/paths';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import api from '@/lib/api';
 import { useAppDispatch } from '@/hooks';
 import { addToast } from '@/features/ui/uiSlice';
@@ -84,6 +85,7 @@ const ResetPasswordPage: React.FC = () => {
                             value={formik.values.password}
                             error={formik.touched.password && formik.errors.password ? formik.errors.password : undefined}
                         />
+                        <PasswordStrengthIndicator password={formik.values.password} />
                         <Input
                             label="Yeni Şifre Tekrar"
                             type="password"
