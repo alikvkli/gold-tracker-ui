@@ -5,6 +5,7 @@ import {
     Wallet,
     History,
     Loader2,
+    Info,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 import { PATHS } from '../../routes/paths';
@@ -78,6 +79,21 @@ const DashboardPage: React.FC = () => {
             {/* Custom Content Area */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-10">
                 <div className="xl:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
+                    {/* Disclaimer */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 items-start">
+                        <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500 shrink-0">
+                            <Info size={20} />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-amber-500 mb-0.5">Önemli Bilgilendirme</h4>
+                            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                                Bu platformda gösterilen altın ve döviz fiyatları, piyasa ortalaması alınarak <strong>tahmini</strong> olarak sunulmaktadır.
+                                Kurumumuz bir borsa veya döviz bürosu değildir; gösterilen değerler üzerinden alım/satım yapılmaz.
+                                Gerçek işlem fiyatları, piyasa koşullarına ve işlem yaptığınız kuruma göre farklılık gösterebilir.
+                            </p>
+                        </div>
+                    </div>
+
                     {/* Tab Switcher */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="flex p-1 sm:p-1.5 bg-zinc-900 border border-white/5 rounded-xl sm:rounded-2xl w-full sm:w-auto">

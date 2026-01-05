@@ -214,6 +214,20 @@ const AssetsPage: React.FC = () => {
                 </Button>
             </header>
 
+            {/* Disclaimer */}
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 items-start">
+                <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500 shrink-0">
+                    <Info size={20} />
+                </div>
+                <div>
+                    <h4 className="text-sm font-bold text-amber-500 mb-0.5">Fiyatlar Hakkında</h4>
+                    <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                        Portföyünüzdeki değerler, piyasadaki yaklaşık fiyatlar baz alınarak hesaplanmıştır.
+                        Kesin satış fiyatları kuyumcu veya banka kurlarına göre değişiklik gösterebilir.
+                    </p>
+                </div>
+            </div>
+
             {!isLoading && allAssets.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-8 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
