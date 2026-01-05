@@ -21,51 +21,41 @@ import api from '../../lib/api';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import { getAssetUnit } from '../../lib/utils';
+import {
+    useGetAllAssetsQuery,
+    useGetCurrenciesQuery,
+    Asset,
+    Currency
+} from '../../features/api/apiSlice';
 
-
-interface Asset {
-    id: number;
-    currency_id: number;
-    type: 'buy' | 'sell';
-    amount: string;
-    price: string;
-    date: string;
-    place: string | null;
-    note: string | null;
-    currency: {
-        id: number;
-        name: string;
-        code: string;
-        type: string;
-    }
-}
-
-interface Currency {
-    id: number;
-    code: string;
-    name: string;
-    type: string;
-    buying: string;
-    selling: string;
-    last_updated_at?: string;
-    created_at?: string;
-    updated_at?: string;
-}
 
 const AssetsPage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const [allAssets, setAllAssets] = useState<Asset[]>([]);
-    const [currencies, setCurrencies] = useState<Currency[]>([]);
     const { user, encryptionKey } = useAppSelector(state => state.app);
-    const [isLoading, setIsLoading] = useState(true);
 
     // Security
     const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
     const [securityKey, setSecurityKey] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
 
+    // RTK Query
+    const skipQuery = user?.encrypted && !encryptionKey;
+
+    const {
+        data: allAssets = [],
+        isLoading: isAssetsLoading
+    } = useGetAllAssetsQuery(undefined, { skip: skipQuery });
+
+    const {
+        data: currencies = [],
+        isLoading: isCurrenciesLoading
+    } = useGetCurrenciesQuery();
+
+    const isLoading = (isAssetsLoading && !skipQuery) || isCurrenciesLoading;
+
+    // Derived Data
     const currencyMap = useMemo(() => {
         const map = new Map<number, Currency>();
         currencies.forEach(currency => map.set(currency.id, currency));
@@ -79,37 +69,13 @@ const AssetsPage: React.FC = () => {
         const assetCode = asset.currency?.code?.toLowerCase();
         if (!assetCode) return undefined;
 
+        // Fallback search
         return currencies.find(cur => cur.code?.toLowerCase() === assetCode);
-    };
-
-    const fetchAllAssets = async () => {
-        try {
-            const response = await api.get('/assets?per_page=10000');
-            setAllAssets(response.data.data);
-        } catch (error) {
-            console.error('Tüm varlıklar alınırken hata oluştu:', error);
-            dispatch(addToast({ message: 'Varlıklar yüklenemedi.', type: 'error' }));
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const fetchCurrencies = async () => {
-        try {
-            const response = await api.get('/currencies');
-            setCurrencies(response.data);
-        } catch (error) {
-            console.error('Kurlar alınırken hata oluştu:', error);
-        }
     };
 
     useEffect(() => {
         if (user?.encrypted && !encryptionKey) {
             setIsSecurityModalOpen(true);
-            setIsLoading(false);
-        } else {
-            fetchAllAssets();
-            fetchCurrencies();
         }
     }, [user?.encrypted, encryptionKey]);
 
@@ -119,13 +85,14 @@ const AssetsPage: React.FC = () => {
 
         setIsVerifying(true);
         try {
+            // Minimal check to verify key
             await api.get('/assets?page=1', {
                 headers: { 'X-Encryption-Key': securityKey }
             });
             dispatch(setEncryptionKey(securityKey));
             setIsSecurityModalOpen(false);
             dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
-            fetchAllAssets();
+            // RTK Query will automatically refetch because skipQuery becomes false
         } catch (error: any) {
             const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
@@ -175,6 +142,7 @@ const AssetsPage: React.FC = () => {
         const stats = new Map<number, { amount: number; totalCost: number; places: Set<string> }>();
 
         // Sort by date ascending to calculate weighted average correctly
+        // Note: RTK Query data is immutable, so we copy it first
         const sortedAssets = [...allAssets].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         sortedAssets.forEach(asset => {
@@ -195,8 +163,6 @@ const AssetsPage: React.FC = () => {
                         const avgPrice = current.totalCost / current.amount;
                         current.amount -= amount;
                         current.totalCost -= amount * avgPrice;
-                        // We keep the places as historical record or current? 
-                        // Keeping them serves "Where did I buy these assets?"
                     } else {
                         current.amount -= amount;
                     }
@@ -210,8 +176,7 @@ const AssetsPage: React.FC = () => {
 
     const portfolio = useMemo(() => calculatePortfolio(), [allAssets]);
 
-    // Derived balances map for compatibility with existing code if needed, 
-    // or just use portfolio directly.
+    // Derived balances map for compatibility
     const balances = useMemo(() => {
         const bal = new Map<number, number>();
         portfolio.forEach((value, key) => bal.set(key, value.amount));

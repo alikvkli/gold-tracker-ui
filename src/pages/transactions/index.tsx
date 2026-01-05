@@ -17,117 +17,70 @@ import {
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
-
 import { setEncryptionKey } from '../../features/app';
 import { addToast } from '../../features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import api from '../../lib/api';
+import api from '../../lib/api'; // Kept only for initial key verification
 import { formatDate, formatNumericValue, parseNumericValue } from '../../lib/date';
 import { getAssetUnit } from '../../lib/utils';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
-
-interface Asset {
-    id: number;
-    currency_id: number;
-    type: 'buy' | 'sell';
-    amount: string;
-    price: string;
-    date: string;
-    place: string | null;
-    note: string | null;
-    currency: {
-        id: number;
-        name: string;
-        code: string;
-        type: string;
-    }
-}
-
-interface Currency {
-    id: number;
-    code: string;
-    name: string;
-    type: string;
-    buying: string;
-    selling: string;
-    last_updated_at?: string;
-    created_at?: string;
-    updated_at?: string;
-}
-
-interface Pagination {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-}
+import {
+    useGetAssetsQuery,
+    useGetAllAssetsQuery,
+    useGetCurrenciesQuery,
+    useAddAssetMutation,
+    useUpdateAssetMutation,
+    useDeleteAssetMutation,
+    Asset
+} from '../../features/api/apiSlice';
 
 const TransactionsPage: React.FC = () => {
 
     const dispatch = useAppDispatch();
+    const { user, encryptionKey, dateFormat } = useAppSelector(state => state.app);
 
-    const [assets, setAssets] = useState<Asset[]>([]);
-    const [allAssets, setAllAssets] = useState<Asset[]>([]); // For balance calc
-    const [currencies, setCurrencies] = useState<Currency[]>([]);
-    const [pagination, setPagination] = useState<Pagination | null>(null);
-    const { user, encryptionKey, dateFormat, token } = useAppSelector(state => state.app);
-    const [isLoading, setIsLoading] = useState(true);
+    // Local UI State
     const [page, setPage] = useState(1);
     const [activeTab, setActiveTab] = useState<'buy' | 'sell'>('buy');
+    const [selectedAssetType, setSelectedAssetType] = useState<'Altın' | 'Döviz'>('Altın');
+    const [isExternalSale, setIsExternalSale] = useState(false);
 
-    // Deletion state
-    const [isDeleting, setIsDeleting] = useState<number | null>(null);
+    // Modal States
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [assetToDelete, setAssetToDelete] = useState<number | null>(null);
-
-    // Edit state
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
-    const [isEditing, setIsEditing] = useState(false);
 
-    // Security
+    // Security Modal
     const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
     const [securityKey, setSecurityKey] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
 
-    const [selectedAssetType, setSelectedAssetType] = useState<'Altın' | 'Döviz'>('Altın');
+    // RTK Query Hooks
+    const skipQuery = user?.encrypted && !encryptionKey;
 
-    const fetchAssets = async (pageNum: number) => {
-        setIsLoading(true);
-        try {
-            const response = await api.get(`/assets?page=${pageNum}`);
-            setAssets(response.data.data);
-            setPagination(response.data.pagination);
-        } catch (error) {
-            console.error('Varlıklar alınırken hata oluştu:', error);
-            dispatch(addToast({ message: 'İşlem geçmişi yüklenemedi.', type: 'error' }));
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const { data: assetsData, isLoading: isAssetsLoading, isFetching: isAssetsFetching } = useGetAssetsQuery(
+        { page },
+        { skip: skipQuery }
+    );
 
-    const fetchAllAssets = async () => {
-        try {
-            const response = await api.get('/assets?per_page=10000');
-            setAllAssets(response.data.data);
-        } catch (error) {
-            console.error('Tüm varlıklar alınırken hata oluştu:', error);
-        }
-    };
+    const { data: allAssets } = useGetAllAssetsQuery(undefined, { skip: skipQuery });
 
-    const fetchCurrencies = async () => {
-        try {
-            const response = await api.get('/currencies');
-            setCurrencies(response.data);
-        } catch (error) {
-            console.error('Kurlar alınırken hata oluştu:', error);
-        }
-    };
+    const { data: currencies = [] } = useGetCurrenciesQuery();
 
-    const calculateBalances = () => {
+    const [addAsset, { isLoading: isAdding }] = useAddAssetMutation();
+    const [updateAsset, { isLoading: isUpdating }] = useUpdateAssetMutation();
+    const [deleteAsset, { isLoading: isDeleting }] = useDeleteAssetMutation();
+
+    const assets = assetsData?.data || [];
+    const pagination = assetsData?.pagination || null;
+    const isLoading = isAssetsLoading || isAssetsFetching;
+
+    // Derived State
+    const balances = useMemo(() => {
         const balances = new Map<number, number>();
-        allAssets.forEach(asset => {
+        (allAssets || []).forEach(asset => {
             const amount = parseFloat(asset.amount);
             if (!isNaN(amount)) {
                 const currencyId = Number(asset.currency_id);
@@ -140,21 +93,23 @@ const TransactionsPage: React.FC = () => {
             }
         });
         return balances;
-    };
+    }, [allAssets]);
 
-    const balances = useMemo(() => calculateBalances(), [allAssets]);
-
+    // Effects
     useEffect(() => {
         if (user?.encrypted && !encryptionKey) {
             setIsSecurityModalOpen(true);
-            setIsLoading(false);
-        } else {
-            fetchAssets(page);
-            fetchAllAssets();
-            fetchCurrencies();
         }
-    }, [page, user?.encrypted, encryptionKey]);
+    }, [user?.encrypted, encryptionKey]);
 
+    useEffect(() => {
+        if (!isEditModalOpen) {
+            formik.setFieldValue('type', activeTab);
+            if (activeTab === 'buy') setIsExternalSale(false);
+        }
+    }, [activeTab, isEditModalOpen]);
+
+    // Handlers
     const handleVerifyKey = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!securityKey) return;
@@ -164,8 +119,6 @@ const TransactionsPage: React.FC = () => {
             dispatch(setEncryptionKey(securityKey));
             setIsSecurityModalOpen(false);
             dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
-            fetchAssets(1);
-            fetchAllAssets();
         } catch (error: any) {
             const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
@@ -175,54 +128,17 @@ const TransactionsPage: React.FC = () => {
     };
 
     const confirmDelete = async () => {
-        if (!assetToDelete || !token) return;
-        setIsDeleting(assetToDelete);
+        if (!assetToDelete) return;
         try {
-            const headers: any = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
-            if (encryptionKey) headers['X-Encryption-Key'] = encryptionKey;
-
-            await api.post(`/assets/${assetToDelete}`, { _method: 'DELETE' }, { headers });
-
+            await deleteAsset(assetToDelete).unwrap();
             dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
-            fetchAssets(page);
-            fetchAllAssets();
             setIsDeleteModalOpen(false);
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Silme işlemi başarısız.';
-            dispatch(addToast({ message: errorMessage, type: 'error' }));
-        } finally {
-            setIsDeleting(null);
             setAssetToDelete(null);
-        }
-    };
-
-    const handleUpdate = async (values: any) => {
-        if (!assetToEdit || !token) return;
-        setIsEditing(true);
-        try {
-            const headers: any = { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' };
-            if (encryptionKey) headers['X-Encryption-Key'] = encryptionKey;
-
-            await api.post(`/assets/${assetToEdit.id}`, { ...values, _method: 'PUT' }, { headers });
-
-            dispatch(addToast({ message: 'İşlem güncellendi.', type: 'success' }));
-            setIsEditModalOpen(false);
-            setAssetToEdit(null);
-            formik.resetForm();
-            fetchAssets(page);
-            fetchAllAssets();
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Güncelleme başarısız.';
+            const errorMessage = error?.data?.message || 'Silme işlemi başarısız.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
-        } finally {
-            setIsEditing(false);
         }
     };
-
-    // External Sale State
-    const [isExternalSale, setIsExternalSale] = useState(false);
-
-
 
     const formik = useFormik({
         initialValues: {
@@ -243,7 +159,6 @@ const TransactionsPage: React.FC = () => {
         }),
         onSubmit: async (values) => {
             if (values.type === 'sell' && !isExternalSale) {
-                // Check balance only if NOT external sale
                 const currentBalance = balances.get(parseInt(values.currency_id)) || 0;
                 if (parseFloat(String(values.amount)) > currentBalance) {
                     dispatch(addToast({ message: `Yetersiz bakiye. Mevcut: ${currentBalance}`, type: 'error' }));
@@ -252,32 +167,39 @@ const TransactionsPage: React.FC = () => {
             }
 
             if (isEditModalOpen && assetToEdit) {
-                await handleUpdate(values);
+                try {
+                    const payload = {
+                        ...values,
+                        currency_id: Number(values.currency_id),
+                        type: values.type as 'buy' | 'sell'
+                    };
+                    await updateAsset({ id: assetToEdit.id, data: payload }).unwrap();
+                    dispatch(addToast({ message: 'İşlem güncellendi.', type: 'success' }));
+                    setIsEditModalOpen(false);
+                    setAssetToEdit(null);
+                    formik.resetForm();
+                } catch (error: any) {
+                    const errorMessage = error?.data?.message || 'Güncelleme başarısız.';
+                    dispatch(addToast({ message: errorMessage, type: 'error' }));
+                }
             } else {
                 try {
-                    await api.post('/assets', values);
+                    const payload = {
+                        ...values,
+                        currency_id: Number(values.currency_id),
+                        type: values.type as 'buy' | 'sell'
+                    };
+                    await addAsset(payload).unwrap();
                     dispatch(addToast({ message: 'İşlem eklendi.', type: 'success' }));
                     formik.resetForm();
-                    // Keep type as selected tab
                     formik.setFieldValue('type', activeTab);
-                    fetchAssets(1);
-                    fetchAllAssets();
                     setPage(1);
                 } catch (error: any) {
-                    dispatch(addToast({ message: error.response?.data?.errors?.[0] || 'Hata oluştu.', type: 'error' }));
+                    dispatch(addToast({ message: error?.data?.errors?.[0] || 'Hata oluştu.', type: 'error' }));
                 }
             }
         },
     });
-
-    // Update form type when tab changes
-    useEffect(() => {
-        if (!isEditModalOpen) {
-            formik.setFieldValue('type', activeTab);
-            // Reset external sale when switching tabs
-            if (activeTab === 'buy') setIsExternalSale(false);
-        }
-    }, [activeTab, isEditModalOpen]);
 
     // Auto-fill price
     useEffect(() => {
@@ -290,9 +212,23 @@ const TransactionsPage: React.FC = () => {
         }
     }, [formik.values.currency_id, formik.values.type, currencies]);
 
+    const openEditModal = (asset: Asset) => {
+        setAssetToEdit(asset);
+        setIsEditModalOpen(true);
+        formik.setValues({
+            currency_id: String(asset.currency_id),
+            type: asset.type,
+            amount: asset.amount,
+            price: asset.price,
+            date: asset.date || new Date().toISOString().split('T')[0],
+            place: asset.place || '',
+            note: asset.note || '',
+        });
+    };
+
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-            {/* Header omitted from snippet, assume existing */}
+            {/* Header */}
             <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
@@ -360,7 +296,6 @@ const TransactionsPage: React.FC = () => {
                                         checked={isExternalSale}
                                         onChange={(e) => {
                                             setIsExternalSale(e.target.checked);
-                                            // Optional: reset currency selection if switching modes
                                             formik.setFieldValue('currency_id', '');
                                         }}
                                         className="w-4 h-4 rounded border-gray-600 bg-zinc-800 text-amber-500 focus:ring-amber-500/50"
@@ -382,14 +317,12 @@ const TransactionsPage: React.FC = () => {
                                     <option value="" disabled>Seçiniz...</option>
                                     {currencies
                                         .filter(cur => {
-                                            // Ensure type matches selected tab
                                             const matchesType = selectedAssetType === 'Altın'
                                                 ? (cur.type === 'Altın' || cur.type === 'Gold')
                                                 : cur.type === 'Döviz';
 
                                             if (!matchesType) return false;
 
-                                            // If selling AND NOT external, only show owned assets
                                             if (activeTab === 'sell' && !isExternalSale) {
                                                 const balance = balances.get(cur.id) || 0;
                                                 return balance > 0;
@@ -399,7 +332,6 @@ const TransactionsPage: React.FC = () => {
                                         })
                                         .map(cur => {
                                             const balance = balances.get(cur.id) || 0;
-                                            // If Sell tab AND NOT external, show balance info
                                             const label = (activeTab === 'sell' && !isExternalSale)
                                                 ? `${selectedAssetType === 'Altın' ? cur.name : cur.code} (Mevcut: ${balance})`
                                                 : (selectedAssetType === 'Altın' ? cur.name : cur.code);
@@ -486,7 +418,7 @@ const TransactionsPage: React.FC = () => {
                     <Button
                         type="submit"
                         className={`w-full ${activeTab === 'buy' ? 'bg-green-600 hover:bg-green-500' : 'bg-red-600 hover:bg-red-500'}`}
-                        isLoading={formik.isSubmitting || isEditing}
+                        isLoading={formik.isSubmitting || isAdding || isUpdating}
                     >
                         {isEditModalOpen
                             ? 'İşlemi Güncelle'
@@ -504,8 +436,7 @@ const TransactionsPage: React.FC = () => {
                         Son İşlemler
                     </h3>
                 </div>
-                {/* ... (Existing table code simplified for brevity, assume similar to current AssetsPage but without P/L focus maybe) ... */}
-                {/* Re-using the exact table from AssetsPage is fine, just pasting key parts below */}
+
                 {/* Mobile Card View (Visible < lg) */}
                 <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
                     {isLoading ? (
@@ -544,12 +475,14 @@ const TransactionsPage: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
-                                    <div>
-                                        <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
-                                        <p className="text-white font-medium">
-                                            {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
-                                        </p>
-                                    </div>
+                                    <button className="col-span-2 text-left" onClick={() => openEditModal(asset)}>
+                                        <div>
+                                            <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
+                                            <p className="text-white font-medium">
+                                                {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
+                                            </p>
+                                        </div>
+                                    </button>
                                     <div className="text-right">
                                         <p className="text-xs text-zinc-500 mb-0.5">Birim Fiyat</p>
                                         <p className="text-zinc-300 font-medium">₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
@@ -569,7 +502,6 @@ const TransactionsPage: React.FC = () => {
                 {/* Desktop Table View (Visible >= lg) */}
                 <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
-                        {/* Table Header Same as before */}
                         <thead>
                             <tr className="border-b border-white/5 bg-white/5">
                                 <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400">Tür / Tarih</th>
@@ -587,7 +519,11 @@ const TransactionsPage: React.FC = () => {
                                 <tr><td colSpan={6} className="py-10 text-center text-zinc-500">İşlem bulunamadı.</td></tr>
                             ) : (
                                 assets.map((asset) => (
-                                    <tr key={asset.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                    <tr
+                                        key={asset.id}
+                                        className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                                        onClick={() => openEditModal(asset)}
+                                    >
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`p-2 rounded-lg ${asset.type === 'buy' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
@@ -613,7 +549,8 @@ const TransactionsPage: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setAssetToDelete(asset.id);
                                                     setIsDeleteModalOpen(true);
                                                 }}
@@ -628,7 +565,6 @@ const TransactionsPage: React.FC = () => {
                         </tbody>
                     </table>
                 </div>
-                {/* Pagination (Simplified) */}
                 {pagination && pagination.last_page > 1 && (
                     <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
                         <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="disabled:opacity-50"><ChevronLeft /></button>
@@ -649,12 +585,13 @@ const TransactionsPage: React.FC = () => {
                         <p className="text-zinc-500 mb-6">Bu işlem geri alınamaz. Devam etmek istiyor musunuz?</p>
                         <div className="flex gap-3">
                             <Button className="flex-1 bg-zinc-800 hover:bg-zinc-700" onClick={() => setIsDeleteModalOpen(false)}>Vazgeç</Button>
-                            <Button className="flex-1 bg-red-600 hover:bg-red-500" onClick={confirmDelete} isLoading={isDeleting !== null}>Sil</Button>
+                            <Button className="flex-1 bg-red-600 hover:bg-red-500" onClick={confirmDelete} isLoading={isDeleting}>Sil</Button>
                         </div>
                     </div>
                 </div>
             )}
-            {/* Security Modal (Simplified reuse) */}
+
+            {/* Security Modal */}
             {isSecurityModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
                     <form onSubmit={handleVerifyKey} className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4">

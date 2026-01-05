@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     TrendingUp,
@@ -6,65 +6,37 @@ import {
     History,
     Loader2,
 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../hooks';
+import { useAppSelector } from '../../hooks';
 import { PATHS } from '../../routes/paths';
-import { addToast } from '@/features/ui/uiSlice';
-import api from '@/lib/api';
 import { formatDate } from '@/lib/date';
-
-interface Currency {
-    id: number;
-    code: string;
-    name: string;
-    type: string;
-    buying: string;
-    selling: string;
-    last_updated_at: string;
-}
-
-interface Asset {
-    id: number;
-    currency_id: number;
-    amount: string;
-    price: string;
-    currency: {
-        id: number;
-        code: string;
-        name: string;
-        type: string;
-    }
-}
+import {
+    useGetAllAssetsQuery,
+    useGetCurrenciesQuery
+} from '@/features/api/apiSlice';
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const { dateFormat } = useAppSelector(state => state.app);
-    const [currencies, setCurrencies] = useState<Currency[]>([]);
-    const [assets, setAssets] = useState<Asset[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { dateFormat, user, encryptionKey } = useAppSelector(state => state.app);
     const [activeTab, setActiveTab] = useState<'Altın' | 'Döviz'>('Altın');
 
-    const fetchData = async () => {
-        try {
-            const [currenciesRes, assetsRes] = await Promise.all([
-                api.get('/currencies'),
-                api.get('/assets?per_page=1000')
-            ]);
-            setCurrencies(currenciesRes.data);
-            setAssets(assetsRes.data.data);
-        } catch (error) {
-            console.error('Veriler alınırken hata oluştu:', error);
-            dispatch(addToast({ message: 'Veriler güncellenirken bir hata oluştu.', type: 'error' }));
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // RTK Query Hooks with Polling
+    const skipQuery = user?.encrypted && !encryptionKey;
 
-    useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 60000);
-        return () => clearInterval(interval);
-    }, []);
+    // Poll every 60 seconds
+    const {
+        data: currencies = [],
+        isLoading: isCurrenciesLoading
+    } = useGetCurrenciesQuery(undefined, { pollingInterval: 60000 });
+
+    const {
+        data: assets = [],
+        isLoading: isAssetsLoading
+    } = useGetAllAssetsQuery(undefined, {
+        skip: skipQuery,
+        pollingInterval: 60000
+    });
+
+    const isLoading = isCurrenciesLoading || (isAssetsLoading && !skipQuery);
 
     const totalPortfolioValue = assets.reduce((total, asset) => {
         const currency = currencies.find(c => c.id === asset.currency_id);
@@ -185,7 +157,7 @@ const DashboardPage: React.FC = () => {
                                                     ₺{parseFloat(cur.selling).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                 </p>
                                                 <p className="text-[8px] sm:text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1 hidden sm:block">
-                                                    {formatDate(cur.last_updated_at, dateFormat)}
+                                                    {formatDate(cur.last_updated_at || new Date().toISOString(), dateFormat)}
                                                 </p>
                                             </td>
                                         </tr>
