@@ -8,7 +8,7 @@ export default function PrivateLayout() {
     const { login } = useAppSelector(state => state.app);
 
     if (!login) {
-        return <Navigate to={PATHS.LOGIN} replace />;
+        return <Navigate to={PATHS.HOME} replace />;
     }
 
     return (
