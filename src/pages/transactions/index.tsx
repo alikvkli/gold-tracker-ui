@@ -20,7 +20,6 @@ import * as Yup from 'yup';
 import { setEncryptionKey } from '../../features/app';
 import { addToast } from '../../features/ui/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import api from '../../lib/api'; // Kept only for initial key verification
 import { formatDate, formatNumericValue, parseNumericValue } from '../../lib/date';
 import { getAssetUnit } from '../../lib/utils';
 import Button from '../../components/Button';
@@ -57,7 +56,7 @@ const TransactionsPage: React.FC = () => {
     const [transactionSecurityKey, setTransactionSecurityKey] = useState('');
     const [isTransactionVerifying, setIsTransactionVerifying] = useState(false);
     const [pendingAction, setPendingAction] = useState<{
-        type: 'add' | 'update' | 'delete';
+        type: 'add' | 'update' | 'delete' | 'delete_confirmation';
         payload?: any;
         id?: number;
     } | null>(null);
@@ -128,18 +127,24 @@ const TransactionsPage: React.FC = () => {
 
         setIsTransactionVerifying(true);
         try {
-            // Test the key with a lightweight request first? 
-            // Or just try to execute the pending action, if it fails with 403/500 due to key, catch it?
-            // Safer to use the key in the action.
+            if (pendingAction?.type === 'delete_confirmation') {
+                // Store key globally to unlock and allow next request to use it
+                dispatch(setEncryptionKey(transactionSecurityKey));
+
+                // Transition to Delete Confirmation
+                setIsTransactionSecurityModalOpen(false);
+                setAssetToDelete(pendingAction.id!);
+                setIsDeleteModalOpen(true);
+
+                setPendingAction(null);
+                setTransactionSecurityKey('');
+                setIsTransactionVerifying(false);
+                return;
+            }
 
             const headers = { 'X-Encryption-Key': transactionSecurityKey };
 
-            if (pendingAction?.type === 'delete' && pendingAction.id) {
-                await deleteAsset({ id: pendingAction.id, headers }).unwrap();
-                dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
-                setIsDeleteModalOpen(false);
-                setAssetToDelete(null);
-            } else if (pendingAction?.type === 'update' && pendingAction.id) {
+            if (pendingAction?.type === 'update' && pendingAction.id) {
                 await updateAsset({ id: pendingAction.id, data: pendingAction.payload, headers }).unwrap();
                 dispatch(addToast({ message: 'İşlem güncellendi.', type: 'success' }));
                 setIsEditModalOpen(false);
@@ -173,18 +178,18 @@ const TransactionsPage: React.FC = () => {
     const confirmDelete = async () => {
         if (!assetToDelete) return;
 
-        if (user?.encrypted) {
-            setPendingAction({ type: 'delete', id: assetToDelete });
-            setIsTransactionSecurityModalOpen(true);
-            return;
-        }
+        // No need to ask for password here anymore, it was asked before (if encrypted)
+        // AND the key is now in the store.
 
         try {
+            // We don't pass headers explicitely here because api.ts will pick up the key from the store
+            // which we set in the security step.
             await deleteAsset({ id: assetToDelete }).unwrap();
             dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
             setIsDeleteModalOpen(false);
             setAssetToDelete(null);
         } catch (error: any) {
+            // If 403, maybe key was wrong or expired? 
             const errorMessage = error?.data?.message || 'Silme işlemi başarısız.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
         }
@@ -521,8 +526,13 @@ const TransactionsPage: React.FC = () => {
                                         <p className="text-xs text-zinc-500 mb-1">{formatDate(asset.date, dateFormat)}</p>
                                         <button
                                             onClick={() => {
-                                                setAssetToDelete(asset.id);
-                                                setIsDeleteModalOpen(true);
+                                                if (user?.encrypted) {
+                                                    setPendingAction({ type: 'delete_confirmation', id: asset.id });
+                                                    setIsTransactionSecurityModalOpen(true);
+                                                } else {
+                                                    setAssetToDelete(asset.id);
+                                                    setIsDeleteModalOpen(true);
+                                                }
                                             }}
                                             className="p-1.5 text-zinc-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
                                         >
@@ -608,8 +618,13 @@ const TransactionsPage: React.FC = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setAssetToDelete(asset.id);
-                                                    setIsDeleteModalOpen(true);
+                                                    if (user?.encrypted) {
+                                                        setPendingAction({ type: 'delete_confirmation', id: asset.id });
+                                                        setIsTransactionSecurityModalOpen(true);
+                                                    } else {
+                                                        setAssetToDelete(asset.id);
+                                                        setIsDeleteModalOpen(true);
+                                                    }
                                                 }}
                                                 className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
                                             >
@@ -654,7 +669,7 @@ const TransactionsPage: React.FC = () => {
                     <form onSubmit={handleTransactionSecurityVerify} className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4 border border-white/10">
                         <div className="text-center mb-4">
                             <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-500">
-                                <coins aria-hidden="true" className="w-6 h-6" />
+                                <Coins aria-hidden="true" className="w-6 h-6" />
                                 {/* Using a standard icon just in case coins isn't imported or valid, but 'Coins' is imported on top */}
                             </div>
                             <h2 className="text-2xl font-bold">Güvenlik Kontrolü</h2>

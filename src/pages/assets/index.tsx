@@ -350,19 +350,9 @@ const AssetsPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b border-white/5 text-xs font-black uppercase tracking-widest text-zinc-500">
-                                    <th className="px-4 py-4">Varlık</th>
-                                    <th className="px-4 py-4">Yer / Tarih</th>
-                                    <th className="px-4 py-4 text-center">Miktar</th>
-                                    <th className="px-4 py-4 text-right">Alış Fiyatı</th>
-                                    <th className="px-4 py-4 text-right">Güncel Fiyat</th>
-                                    <th className="px-4 py-4 text-right">Değer</th>
-                                    <th className="px-4 py-4 text-right">K/Z</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
+                        <>
+                            {/* Mobile Card View (< lg) */}
+                            <div className="lg:hidden space-y-4">
                                 {allAssets.map((asset) => {
                                     const currency = getCurrencyForAsset(asset);
                                     if (!currency) return null;
@@ -374,82 +364,174 @@ const AssetsPage: React.FC = () => {
                                     if (isNaN(amount) || isNaN(price) || isNaN(currentPrice)) return null;
 
                                     const totalValue = amount * currentPrice;
-                                    const profitLoss = totalValue - (amount * price);
-                                    const profitLossPercent = (amount * price) > 0 ? (profitLoss / (amount * price)) * 100 : 0;
+                                    const totalCost = amount * price;
+                                    const profitLoss = totalValue - totalCost;
+                                    const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
                                     const isProfit = profitLoss >= 0;
 
                                     return (
-                                        <tr key={asset.id} className="hover:bg-white/5 transition-colors group">
-                                            <td className="px-4 py-4">
+                                        <div key={asset.id} className="bg-zinc-800/40 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all">
+                                            <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
-                                                        <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-500">
+                                                    <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5">
+                                                        <span className="text-sm font-bold text-zinc-400">
                                                             {currency.code?.substring(0, 1)}
                                                         </span>
                                                     </div>
-                                                    <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
-                                                        {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
-                                                    </span>
+                                                    <div>
+                                                        <h3 className="font-bold text-base text-white">
+                                                            {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
+                                                        </h3>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-xs text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded-md">
+                                                                {asset.place || 'Belirtilmedi'}
+                                                            </span>
+                                                            <span className="text-[10px] text-zinc-600">
+                                                                {new Date(asset.date).toLocaleDateString('tr-TR')}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-zinc-300">{asset.place || '-'}</span>
-                                                    <span className="text-xs text-zinc-500">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-sm">
+                                                <div>
+                                                    <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
+                                                    <p className="text-white font-medium">
+                                                        {amount.toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
+                                                    </p>
                                                 </div>
-                                            </td>
-                                            <td className="px-4 py-4 text-center">
-                                                <span className="text-sm font-bold text-white">
-                                                    {amount.toLocaleString('tr-TR')}
-                                                    <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <span className="text-sm font-medium text-zinc-400">
-                                                    ₺{price.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <span className="text-sm font-bold text-white">
-                                                    ₺{currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <span className="text-sm font-black text-white">
-                                                    ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                    <span className="text-sm font-bold">
-                                                        {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                    </span>
-                                                    <span className="text-xs font-bold opacity-80">
-                                                        %{Math.abs(profitLossPercent).toFixed(2)}
-                                                    </span>
+                                                <div className="text-right">
+                                                    <p className="text-xs text-zinc-500 mb-0.5">Alış Fiyatı</p>
+                                                    <p className="text-zinc-300 font-medium">₺{price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
                                                 </div>
-                                            </td>
-                                        </tr>
+
+                                                <div>
+                                                    <p className="text-xs text-zinc-500 mb-0.5">Değerim</p>
+                                                    <p className="text-white font-bold">
+                                                        ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                    </p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xs text-zinc-500 mb-0.5">Kar/Zarar</p>
+                                                    <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                        <span className="font-bold text-sm">
+                                                            {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold opacity-80">
+                                                            %{Math.abs(profitLossPercent).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     );
                                 })}
-                                {allAssets.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="py-12 text-center text-zinc-500">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <Wallet className="w-10 h-10 opacity-20" />
-                                                <p>Henüz bir varlık eklememişsiniz.</p>
-                                                <Button
-                                                    className="bg-zinc-800 hover:bg-zinc-700 h-9 text-xs"
-                                                    onClick={() => navigate(PATHS.TRANSACTIONS)}
-                                                >
-                                                    İşlemlere Git
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                            </div>
+
+                            {/* Desktop Table View (>= lg) */}
+                            <div className="hidden lg:block overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="border-b border-white/5 text-xs font-black uppercase tracking-widest text-zinc-500">
+                                            <th className="px-4 py-4">Varlık</th>
+                                            <th className="px-4 py-4">Yer / Tarih</th>
+                                            <th className="px-4 py-4 text-center">Miktar</th>
+                                            <th className="px-4 py-4 text-right">Alış Fiyatı</th>
+                                            <th className="px-4 py-4 text-right">Güncel Fiyat</th>
+                                            <th className="px-4 py-4 text-right">Değer</th>
+                                            <th className="px-4 py-4 text-right">K/Z</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {allAssets.map((asset) => {
+                                            const currency = getCurrencyForAsset(asset);
+                                            if (!currency) return null;
+
+                                            const amount = parseFloat(asset.amount);
+                                            const price = parseFloat(asset.price);
+                                            const currentPrice = parseFloat(currency.selling);
+
+                                            if (isNaN(amount) || isNaN(price) || isNaN(currentPrice)) return null;
+
+                                            const totalValue = amount * currentPrice;
+                                            const profitLoss = totalValue - (amount * price);
+                                            const profitLossPercent = (amount * price) > 0 ? (profitLoss / (amount * price)) * 100 : 0;
+                                            const isProfit = profitLoss >= 0;
+
+                                            return (
+                                                <tr key={asset.id} className="hover:bg-white/5 transition-colors group">
+                                                    <td className="px-4 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
+                                                                <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-500">
+                                                                    {currency.code?.substring(0, 1)}
+                                                                </span>
+                                                            </div>
+                                                            <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                                                                {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-bold text-zinc-300">{asset.place || '-'}</span>
+                                                            <span className="text-xs text-zinc-500">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-center">
+                                                        <span className="text-sm font-bold text-white">
+                                                            {amount.toLocaleString('tr-TR')}
+                                                            <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right">
+                                                        <span className="text-sm font-medium text-zinc-400">
+                                                            ₺{price.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right">
+                                                        <span className="text-sm font-bold text-white">
+                                                            ₺{currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right">
+                                                        <span className="text-sm font-black text-white">
+                                                            ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-4 text-right">
+                                                        <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                            <span className="text-sm font-bold">
+                                                                {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                            <span className="text-xs font-bold opacity-80">
+                                                                %{Math.abs(profitLossPercent).toFixed(2)}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {allAssets.length === 0 && (
+                                <div className="py-12 text-center text-zinc-500">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <Wallet className="w-10 h-10 opacity-20" />
+                                        <p>Henüz bir varlık eklememişsiniz.</p>
+                                        <Button
+                                            className="bg-zinc-800 hover:bg-zinc-700 h-9 text-xs"
+                                            onClick={() => navigate(PATHS.TRANSACTIONS)}
+                                        >
+                                            İşlemlere Git
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     </div>
                 )}
             </section>
