@@ -52,10 +52,20 @@ const TransactionsPage: React.FC = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [assetToEdit, setAssetToEdit] = useState<Asset | null>(null);
 
-    // Security Modal
-    const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
-    const [securityKey, setSecurityKey] = useState('');
-    const [isVerifying, setIsVerifying] = useState(false);
+    // Transaction Security Modal
+    const [isTransactionSecurityModalOpen, setIsTransactionSecurityModalOpen] = useState(false);
+    const [transactionSecurityKey, setTransactionSecurityKey] = useState('');
+    const [isTransactionVerifying, setIsTransactionVerifying] = useState(false);
+    const [pendingAction, setPendingAction] = useState<{
+        type: 'add' | 'update' | 'delete';
+        payload?: any;
+        id?: number;
+    } | null>(null);
+
+    // Initial Load Security (Optional: Only if we want to force unlock for history, but we decided to remove blocking)
+    // We will rely on skipQuery to hide data, but not show modal on load.
+    // const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false); 
+
 
     // RTK Query Hooks
     const skipQuery = user?.encrypted && !encryptionKey;
@@ -96,11 +106,13 @@ const TransactionsPage: React.FC = () => {
     }, [allAssets]);
 
     // Effects
+    /*
     useEffect(() => {
         if (user?.encrypted && !encryptionKey) {
             setIsSecurityModalOpen(true);
         }
     }, [user?.encrypted, encryptionKey]);
+    */
 
     useEffect(() => {
         if (!isEditModalOpen) {
@@ -110,27 +122,65 @@ const TransactionsPage: React.FC = () => {
     }, [activeTab, isEditModalOpen]);
 
     // Handlers
-    const handleVerifyKey = async (e: React.FormEvent) => {
+    const handleTransactionSecurityVerify = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!securityKey) return;
-        setIsVerifying(true);
+        if (!transactionSecurityKey) return;
+
+        setIsTransactionVerifying(true);
         try {
-            await api.get('/assets?page=1', { headers: { 'X-Encryption-Key': securityKey } });
-            dispatch(setEncryptionKey(securityKey));
-            setIsSecurityModalOpen(false);
-            dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
+            // Test the key with a lightweight request first? 
+            // Or just try to execute the pending action, if it fails with 403/500 due to key, catch it?
+            // Safer to use the key in the action.
+
+            const headers = { 'X-Encryption-Key': transactionSecurityKey };
+
+            if (pendingAction?.type === 'delete' && pendingAction.id) {
+                await deleteAsset({ id: pendingAction.id, headers }).unwrap();
+                dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
+                setIsDeleteModalOpen(false);
+                setAssetToDelete(null);
+            } else if (pendingAction?.type === 'update' && pendingAction.id) {
+                await updateAsset({ id: pendingAction.id, data: pendingAction.payload, headers }).unwrap();
+                dispatch(addToast({ message: 'İşlem güncellendi.', type: 'success' }));
+                setIsEditModalOpen(false);
+                setAssetToEdit(null);
+                formik.resetForm();
+            } else if (pendingAction?.type === 'add') {
+                await addAsset({ data: pendingAction.payload, headers }).unwrap();
+                dispatch(addToast({ message: 'İşlem eklendi.', type: 'success' }));
+                formik.resetForm();
+                formik.setFieldValue('type', activeTab);
+                setPage(1);
+            }
+
+            // If successful, update global key to unlock session
+            if (!encryptionKey) {
+                dispatch(setEncryptionKey(transactionSecurityKey));
+            }
+
+            setIsTransactionSecurityModalOpen(false);
+            setPendingAction(null);
+            setTransactionSecurityKey('');
+
         } catch (error: any) {
-            const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
+            const errorMessage = error?.data?.message || error.response?.data?.errors?.[0] || 'İşlem başarısız (Şifre hatalı olabilir).';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
         } finally {
-            setIsVerifying(false);
+            setIsTransactionVerifying(false);
         }
     };
 
     const confirmDelete = async () => {
         if (!assetToDelete) return;
+
+        if (user?.encrypted) {
+            setPendingAction({ type: 'delete', id: assetToDelete });
+            setIsTransactionSecurityModalOpen(true);
+            return;
+        }
+
         try {
-            await deleteAsset(assetToDelete).unwrap();
+            await deleteAsset({ id: assetToDelete }).unwrap();
             dispatch(addToast({ message: 'İşlem başarıyla silindi.', type: 'success' }));
             setIsDeleteModalOpen(false);
             setAssetToDelete(null);
@@ -166,14 +216,26 @@ const TransactionsPage: React.FC = () => {
                 }
             }
 
+            const payloadData = {
+                ...values,
+                currency_id: Number(values.currency_id),
+                type: values.type as 'buy' | 'sell'
+            };
+
+            // Check Encryption
+            if (user?.encrypted) {
+                if (isEditModalOpen && assetToEdit) {
+                    setPendingAction({ type: 'update', id: assetToEdit.id, payload: payloadData });
+                } else {
+                    setPendingAction({ type: 'add', payload: payloadData });
+                }
+                setIsTransactionSecurityModalOpen(true);
+                return;
+            }
+
             if (isEditModalOpen && assetToEdit) {
                 try {
-                    const payload = {
-                        ...values,
-                        currency_id: Number(values.currency_id),
-                        type: values.type as 'buy' | 'sell'
-                    };
-                    await updateAsset({ id: assetToEdit.id, data: payload }).unwrap();
+                    await updateAsset({ id: assetToEdit.id, data: payloadData }).unwrap();
                     dispatch(addToast({ message: 'İşlem güncellendi.', type: 'success' }));
                     setIsEditModalOpen(false);
                     setAssetToEdit(null);
@@ -184,12 +246,7 @@ const TransactionsPage: React.FC = () => {
                 }
             } else {
                 try {
-                    const payload = {
-                        ...values,
-                        currency_id: Number(values.currency_id),
-                        type: values.type as 'buy' | 'sell'
-                    };
-                    await addAsset(payload).unwrap();
+                    await addAsset({ data: payloadData }).unwrap();
                     dispatch(addToast({ message: 'İşlem eklendi.', type: 'success' }));
                     formik.resetForm();
                     formik.setFieldValue('type', activeTab);
@@ -591,13 +648,35 @@ const TransactionsPage: React.FC = () => {
                 </div>
             )}
 
-            {/* Security Modal */}
-            {isSecurityModalOpen && (
+            {/* Security Modal - NOW JUST IN TIME */}
+            {isTransactionSecurityModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
-                    <form onSubmit={handleVerifyKey} className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4">
-                        <h2 className="text-2xl font-bold text-center">Güvenlik</h2>
-                        <Input type="password" value={securityKey} onChange={e => setSecurityKey(e.target.value)} placeholder="Şifreleme Anahtarı" />
-                        <Button type="submit" className="w-full" isLoading={isVerifying}>Doğrula</Button>
+                    <form onSubmit={handleTransactionSecurityVerify} className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4 border border-white/10">
+                        <div className="text-center mb-4">
+                            <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-500">
+                                <coins aria-hidden="true" className="w-6 h-6" />
+                                {/* Using a standard icon just in case coins isn't imported or valid, but 'Coins' is imported on top */}
+                            </div>
+                            <h2 className="text-2xl font-bold">Güvenlik Kontrolü</h2>
+                            <p className="text-zinc-400 text-sm mt-1">İşlemi tamamlamak için şifreleme anahtarınızı giriniz.</p>
+                        </div>
+
+                        <Input
+                            type="password"
+                            value={transactionSecurityKey}
+                            onChange={e => setTransactionSecurityKey(e.target.value)}
+                            placeholder="Şifreleme Anahtarı"
+                            autoFocus
+                        />
+
+                        <div className="flex gap-3">
+                            <Button type="button" variant="outline" className="flex-1" onClick={() => {
+                                setIsTransactionSecurityModalOpen(false);
+                                setPendingAction(null);
+                                setTransactionSecurityKey('');
+                            }}>İptal</Button>
+                            <Button type="submit" className="flex-1" isLoading={isTransactionVerifying}>Onayla</Button>
+                        </div>
                     </form>
                 </div>
             )}

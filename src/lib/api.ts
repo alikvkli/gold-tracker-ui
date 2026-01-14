@@ -14,7 +14,11 @@ api.interceptors.request.use(
     (config) => {
         const state = store.getState();
         const token = state.app.token?.trim(); // Trim whitespace
-        const encryptionKey = state.app.encryptionKey?.trim(); // Trim whitespace
+
+        // Priority: Header Key > Store Key
+        const headerKey = config.headers['X-Encryption-Key'] as string;
+        const storeKey = state.app.encryptionKey?.trim();
+        const encryptionKey = headerKey || storeKey;
 
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -25,8 +29,10 @@ api.interceptors.request.use(
         if (encryptionKey) {
             config.headers['X-Encryption-Key'] = encryptionKey;
 
-            // Encrypt Payload if it exists and is an object/array
-            if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+            // Encrypt Payload if it exists and is an object/array, BUT skip for specific endpoints
+            const shouldEncrypt = config.url && !config.url.includes('/encryption/toggle') && !config.url.includes('/assets');
+
+            if (shouldEncrypt && config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
                 try {
                     const jsonPayload = JSON.stringify(config.data);
                     const encrypted = CryptoJS.AES.encrypt(jsonPayload, encryptionKey).toString();

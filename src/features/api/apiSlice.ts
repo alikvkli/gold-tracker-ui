@@ -76,29 +76,31 @@ export const apiSlice = createApi({
             }),
             providesTags: ['Currencies'],
         }),
-        addAsset: builder.mutation<Asset, Partial<Asset>>({
-            query: (body) => ({
+        addAsset: builder.mutation<Asset, { data: Partial<Asset>; headers?: Record<string, string> }>({
+            query: ({ data, headers }) => ({
                 url: '/assets',
                 method: 'POST',
-                data: body,
+                data: data,
+                headers,
             }),
             invalidatesTags: [{ type: 'Assets', id: 'LIST' }, 'Assets'],
         }),
-        updateAsset: builder.mutation<Asset, { id: number; data: Partial<Asset> }>({
-            query: ({ id, data }) => ({
+        updateAsset: builder.mutation<Asset, { id: number; data: Partial<Asset>; headers?: Record<string, string> }>({
+            query: ({ id, data, headers }) => ({
                 url: `/assets/${id}`,
                 method: 'POST', // Using POST with _method: 'PUT' as per existing code
                 data: { ...data, _method: 'PUT' },
+                headers,
             }),
             invalidatesTags: (_result, _error, { id }) => [{ type: 'Assets', id }, { type: 'Assets', id: 'LIST' }, 'Assets'],
         }),
-        deleteAsset: builder.mutation<void, number>({
-            query: (id) => ({
+        deleteAsset: builder.mutation<void, { id: number; headers?: Record<string, string> }>({
+            query: ({ id, headers }) => ({
                 url: `/assets/${id}`,
-                method: 'POST', // Using POST with _method: 'DELETE' as per existing code
-                data: { _method: 'DELETE' },
+                method: 'DELETE',
+                headers,
             }),
-            invalidatesTags: (_result, _error, id) => [{ type: 'Assets', id }, { type: 'Assets', id: 'LIST' }, 'Assets'],
+            invalidatesTags: (_result, _error, { id }) => [{ type: 'Assets', id }, { type: 'Assets', id: 'LIST' }, 'Assets'],
         }),
     }),
 });
