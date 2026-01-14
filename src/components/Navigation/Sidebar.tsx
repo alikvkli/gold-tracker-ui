@@ -12,6 +12,7 @@ import {
 import { PATHS } from '@/routes/paths';
 import { useAppDispatch } from '@/hooks';
 import { logout } from '@/features/app';
+import { apiSlice } from '@/features/api/apiSlice';
 
 const Sidebar: React.FC = () => {
     const navigate = useNavigate();
@@ -62,6 +63,7 @@ const Sidebar: React.FC = () => {
 
     const handleLogout = () => {
         dispatch(logout());
+        dispatch(apiSlice.util.resetApiState());
         navigate(PATHS.HOME);
     };
 
