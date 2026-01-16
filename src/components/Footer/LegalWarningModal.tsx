@@ -39,7 +39,7 @@ const LegalWarningModal: React.FC<LegalWarningModalProps> = ({ isOpen, onClose }
                         Burada yer alan haberler, döviz kurları ve altın fiyatları bilgi amaçlıdır. Yayınlanan bilgiler yatırım danışmanlığı kapsamında değildir.
                     </p>
                     <p>
-                        Bu nedenle, yalnızca burada yer alan bilgilere dayanılarak yatırım kararı verilmesi beklentilerinize uygun sonuçlar doğurmayabilir. Bu web sitesinde yer alan ve <span className="text-amber-500 font-semibold">Harem Altın ve Kıymetli Madenler Ticaret Limited Şirketi</span> tarafından derlenmiş olan her türlü bilgi, şekil, şema, tahmin ve tavsiyeler ile görüşler önceden haber verilmeksizin değiştirilebilir.
+                        Bu nedenle, yalnızca burada yer alan bilgilere dayanılarak yatırım kararı verilmesi beklentilerinize uygun sonuçlar doğurmayabilir. Bu web sitesinde yer alan ve <span className="text-amber-500 font-semibold">Biriktirerek.com</span> tarafından derlenmiş olan her türlü bilgi, şekil, şema, tahmin ve tavsiyeler ile görüşler önceden haber verilmeksizin değiştirilebilir.
                     </p>
                     <p>
                         Bu sitede yer alan her türlü bilgi, değerlendirme, yorum ve istatistiki şekil ve değerler yatırımcıyı bilgilendirmeye yönelik olup, hiç bir şekilde herhangi bir kıymetli madenin ve/veya dövizin alım-satım teklifi ve/veya taahhüdü anlamına gelmemektedir.
@@ -47,7 +47,7 @@ const LegalWarningModal: React.FC<LegalWarningModalProps> = ({ isOpen, onClose }
                     <div className="p-4 bg-amber-500/5 border border-amber-500/10 rounded-xl my-4">
                         <p className="text-xs text-amber-500/80 uppercase tracking-widest font-bold mb-2">Sorumluluk Reddi</p>
                         <p className="text-zinc-400 text-xs">
-                            Gerek site üzerindeki, gerekse site içinde kullanılan kaynaklardaki hata ve eksikliklerden, burada yer alan bilgi, değerlendirme, yorum ve istatistiki şekil ve değerlendirmelerin kullanımı sonucunda ortaya çıkabilecek veya sitedeki bilgilerin kullanılması sonucunda yatırımcıların uğrayabilecekleri doğrudan ve/veya dolaylı zararlardan, kar yoksunluğundan, manevi zararlardan ve üçüncü kişilerin uğrayabileceği zararlardan <span className="font-semibold text-zinc-300">Harem Altın ve Kıymetli Madenler Ticaret Limited Şirketi</span> hiçbir şekilde sorumlu tutulamaz.
+                            Gerek site üzerindeki, gerekse site içinde kullanılan kaynaklardaki hata ve eksikliklerden, burada yer alan bilgi, değerlendirme, yorum ve istatistiki şekil ve değerlendirmelerin kullanımı sonucunda ortaya çıkabilecek veya sitedeki bilgilerin kullanılması sonucunda yatırımcıların uğrayabilecekleri doğrudan ve/veya dolaylı zararlardan, kar yoksunluğundan, manevi zararlardan ve üçüncü kişilerin uğrayabileceği zararlardan <span className="font-semibold text-zinc-300">Biriktirerek.com</span> hiçbir şekilde sorumlu tutulamaz.
                         </p>
                     </div>
                 </div>
