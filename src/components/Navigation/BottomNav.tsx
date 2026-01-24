@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
-    History,
+    Wallet,
     User as UserIcon,
     Calculator
 } from 'lucide-react';
@@ -14,7 +14,7 @@ const BottomNav: React.FC = () => {
 
     const navItems = [
         { path: PATHS.DASHBOARD, label: 'Panel', icon: LayoutDashboard },
-        { path: PATHS.ASSETS, label: 'Varlıklarım', icon: History },
+        { path: PATHS.ASSETS, label: 'Varlıklarım', icon: Wallet },
         { path: PATHS.CALCULATOR, label: 'Dönüştürücü', icon: Calculator },
         { path: PATHS.PROFILE, label: 'Profil', icon: UserIcon },
     ];

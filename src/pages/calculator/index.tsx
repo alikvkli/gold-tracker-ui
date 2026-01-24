@@ -363,9 +363,14 @@ const CalculatorPage: React.FC = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                             <div className="w-full sm:w-1/2 overflow-hidden">
+                                <div className="text-xs sm:text-xs font-bold text-amber-500/70 uppercase tracking-widest mb-1">
+                                    Tahmini Tutar
+                                </div>
                                 {calculation ? (
-                                    <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-amber-500 tracking-tight truncate drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
-                                        {formatCurrencyResult(calculation.result, calculation.to.code === 'TRY')}
+                                    <div className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight truncate drop-shadow-2xl">
+                                        <span className="bg-gradient-to-r from-amber-200 via-amber-500 to-amber-600 bg-clip-text text-transparent">
+                                            {formatCurrencyResult(calculation.result, calculation.to.code === 'TRY')}
+                                        </span>
                                     </div>
                                 ) : (
                                     <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-zinc-800">-</div>
