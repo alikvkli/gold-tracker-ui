@@ -14,7 +14,7 @@ const ResetPasswordPage = lazy(() => import("@/pages/auth/reset-password/index")
 const DashboardPage = lazy(() => import("@/pages/dashboard/index"));
 const AssetsPage = lazy(() => import("@/pages/assets/index")); // Refactored to Savings
 const TransactionsPage = lazy(() => import("@/pages/transactions/index"));
-const CalculatorPage = lazy(() => import("@/pages/calculator/index"));
+const CalculatorPage = lazy(() => import("@/pages/calculator"));
 const ProfilePage = lazy(() => import("@/pages/profile/index"));
 
 import PrivateLayout from "@/layouts/PrivateLayout/index";

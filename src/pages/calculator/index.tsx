@@ -292,16 +292,6 @@ const CalculatorPage: React.FC = () => {
         return c.code;
     };
 
-    // Helper to render filtered result or Loading
-    const renderResult = () => {
-        if (!calculation) return <div className="text-5xl sm:text-6xl font-black text-zinc-700">-</div>;
-
-        return (
-            <div className="text-5xl sm:text-6xl font-black text-amber-500 tracking-tight truncate">
-                {formatCurrencyResult(calculation.result, calculation.to.code === 'TRY')}
-            </div>
-        );
-    };
 
     const selectedFrom = getSelectedCurrency(fromCurrencyId);
     const selectedTo = getSelectedCurrency(toCurrencyId);
@@ -318,16 +308,16 @@ const CalculatorPage: React.FC = () => {
                 <p className="text-zinc-400 font-medium">Anlık piyasa verilerine göre hızlı dönüşüm (Döviz & Altın).</p>
             </header>
 
-            <div className="max-w-xl mx-auto pt-4 relative">
+            <div className="max-w-2xl mx-auto pt-4 relative">
                 {/* Glow Effects */}
                 <div className="absolute -top-20 -left-20 w-80 h-80 bg-amber-500/20 rounded-full blur-[100px] pointer-events-none opacity-50"></div>
                 <div className="absolute top-40 -right-20 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] pointer-events-none opacity-50"></div>
 
                 {/* Main Card */}
-                <div className="relative bg-zinc-900/60 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50">
+                <div className="relative bg-zinc-900/60 backdrop-blur-2xl border border-white/10 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden shadow-2xl shadow-black/50">
 
                     {/* FROM SECTION */}
-                    <div className="p-8 pb-6">
+                    <div className="p-6 sm:p-8 pb-6">
                         <label className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-4 uppercase tracking-wider">
                             <Wallet className="w-4 h-4 text-zinc-500" />
                             Elimdeki Varlık
@@ -338,15 +328,15 @@ const CalculatorPage: React.FC = () => {
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
-                                className="bg-transparent text-5xl sm:text-6xl font-black text-white focus:outline-none w-full sm:w-1/2 placeholder-zinc-700"
+                                className="bg-transparent text-4xl sm:text-5xl font-black text-white focus:outline-none w-full sm:w-1/2 placeholder-zinc-700"
                                 placeholder="0"
                             />
 
                             <button
                                 onClick={() => setIsFromModalOpen(true)}
-                                className="w-full sm:w-auto flex items-center justify-between gap-3 bg-zinc-800 hover:bg-zinc-700 border border-white/5 rounded-2xl pl-4 pr-4 py-3 text-white font-bold transition-all focus:ring-2 focus:ring-amber-500/50"
+                                className="w-full sm:w-auto flex items-center justify-between gap-3 bg-zinc-800 hover:bg-zinc-700 border border-white/5 rounded-xl sm:rounded-2xl pl-4 pr-4 py-3 sm:py-4 text-white font-bold transition-all focus:ring-2 focus:ring-amber-500/50"
                             >
-                                <span className="truncate max-w-[120px] sm:max-w-[150px]">
+                                <span className="truncate max-w-[200px] text-lg">
                                     {getDisplayName(selectedFrom)}
                                 </span>
                                 <ArrowDown className="w-4 h-4 text-zinc-500" />
@@ -365,7 +355,7 @@ const CalculatorPage: React.FC = () => {
                     </div>
 
                     {/* TO SECTION */}
-                    <div className="p-8 pt-10 bg-black/20">
+                    <div className="p-6 sm:p-8 pt-10 bg-black/20">
                         <label className="flex items-center gap-2 text-sm font-bold text-zinc-400 mb-4 uppercase tracking-wider">
                             <TrendingUp className="w-4 h-4 text-zinc-500" />
                             Alacağım Varlık
@@ -373,14 +363,20 @@ const CalculatorPage: React.FC = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                             <div className="w-full sm:w-1/2 overflow-hidden">
-                                {renderResult()}
+                                {calculation ? (
+                                    <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-amber-500 tracking-tight truncate drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">
+                                        {formatCurrencyResult(calculation.result, calculation.to.code === 'TRY')}
+                                    </div>
+                                ) : (
+                                    <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-zinc-800">-</div>
+                                )}
                             </div>
 
                             <button
                                 onClick={() => setIsToModalOpen(true)}
-                                className="w-full sm:w-auto flex items-center justify-between gap-3 bg-zinc-800 hover:bg-zinc-700 border border-white/5 rounded-2xl pl-4 pr-4 py-3 text-white font-bold transition-all focus:ring-2 focus:ring-amber-500/50"
+                                className="w-full sm:w-auto flex items-center justify-between gap-3 bg-zinc-800 hover:bg-zinc-700 border border-white/5 rounded-xl sm:rounded-2xl pl-4 pr-4 py-3 sm:py-4 text-white font-bold transition-all focus:ring-2 focus:ring-amber-500/50"
                             >
-                                <span className="truncate max-w-[120px] sm:max-w-[150px]">
+                                <span className="truncate max-w-[200px] text-lg">
                                     {getDisplayName(selectedTo)}
                                 </span>
                                 <ArrowDown className="w-4 h-4 text-zinc-500" />
@@ -390,7 +386,7 @@ const CalculatorPage: React.FC = () => {
 
                     {/* FOOTER RATES */}
                     {calculation && (
-                        <div className="px-8 py-4 bg-white/5 border-t border-white/5 flex items-center justify-between text-xs sm:text-sm text-zinc-400 font-medium">
+                        <div className="px-6 sm:px-8 py-4 bg-white/5 border-t border-white/5 flex items-center justify-between text-xs sm:text-sm text-zinc-400 font-medium">
                             <div className="flex items-center gap-2">
                                 <RefreshCw className="w-3.5 h-3.5" />
                                 <span>1 {calculation.from.code} = {formatCurrencyResult(calculation.rate, calculation.to.code === 'TRY')} {calculation.to.code}</span>
