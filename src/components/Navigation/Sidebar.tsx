@@ -7,7 +7,8 @@ import {
     User as UserIcon,
     LogOut,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Calculator
 } from 'lucide-react';
 import { PATHS } from '@/routes/paths';
 import { useAppDispatch } from '@/hooks';
@@ -71,6 +72,7 @@ const Sidebar: React.FC = () => {
         { path: PATHS.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
         { path: PATHS.ASSETS, label: 'Varlıklarım', icon: Wallet },
         { path: PATHS.TRANSACTIONS, label: 'İşlemler', icon: History },
+        { path: PATHS.CALCULATOR, label: 'Dönüştürücü', icon: Calculator },
         { path: PATHS.PROFILE, label: 'Profil', icon: UserIcon },
     ];
 

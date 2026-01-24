@@ -8,6 +8,7 @@ export const PATHS = {
     DASHBOARD: "/dashboard",
     ASSETS: "/portfolio",
     TRANSACTIONS: "/transactions",
+    CALCULATOR: "/calculator",
     PROFILE: "/profile",
     NOT_FOUND: "*",
 } as const;

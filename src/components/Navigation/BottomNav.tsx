@@ -4,6 +4,7 @@ import {
     LayoutDashboard,
     History,
     User as UserIcon,
+    Calculator
 } from 'lucide-react';
 import { PATHS } from '@/routes/paths';
 
@@ -14,6 +15,7 @@ const BottomNav: React.FC = () => {
     const navItems = [
         { path: PATHS.DASHBOARD, label: 'Panel', icon: LayoutDashboard },
         { path: PATHS.ASSETS, label: 'Varlıklarım', icon: History },
+        { path: PATHS.CALCULATOR, label: 'Dönüştürücü', icon: Calculator },
         { path: PATHS.PROFILE, label: 'Profil', icon: UserIcon },
     ];
 
@@ -30,8 +32,8 @@ const BottomNav: React.FC = () => {
                             className="flex flex-col items-center gap-1 min-w-[64px]"
                         >
                             <div className={`p-2 rounded-xl transition-all ${isActive
-                                    ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                    : 'text-zinc-500'
+                                ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
+                                : 'text-zinc-500'
                                 }`}>
                                 <Icon className="w-6 h-6" />
                             </div>
