@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
 import Footer from "@/components/Footer";
 import MobileBottomNav from "@/components/Navigation/MobileBottomNav";
+import GoldPriceMarquee from "@/components/GoldPriceMarquee";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -93,6 +94,11 @@ export default function HomePage() {
         <p className="text-lg sm:text-xl text-zinc-400 mb-12 max-w-2xl leading-relaxed">
           Portföyünüzü modern araçlarla takip edin, uçtan uca şifreleme ile anonim kalın ve yatırım kararlarınızı verilerle güçlendirin.
         </p>
+
+        {/* Live Prices Marquee */}
+        <div className="w-full max-w-5xl mb-12">
+          <GoldPriceMarquee />
+        </div>
 
         <div className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto">
           <button

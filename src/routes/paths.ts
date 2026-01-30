@@ -10,5 +10,6 @@ export const PATHS = {
     TRANSACTIONS: "/transactions",
     CALCULATOR: "/calculator",
     PROFILE: "/profile",
+    MARKET: "/market",
     NOT_FOUND: "*",
 } as const;
