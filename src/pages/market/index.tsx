@@ -15,7 +15,7 @@ export default function PublicMarketPage() {
 
     const filteredData = useMemo(() => {
         // Whitelist for currencies (to filter out minor ones)
-        const ALLOWED_CURRENCIES = ["USD", "EUR", "GBP", "CHF", "CAD", "AUD", "JPY", "SAR"];
+        const ALLOWED_CURRENCIES = ["USD", "EUR", "GBP", "CHF", "CAD", "AUD", "JPY", "SAR", "DKK", "SEK", "NOK", "RUB", "CNY", "AED"];
 
         let results = currencies.filter(item => {
             const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());

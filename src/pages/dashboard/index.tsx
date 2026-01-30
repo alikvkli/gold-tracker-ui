@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    TrendingUp,
     Wallet,
     History,
     Loader2,
@@ -10,6 +9,7 @@ import {
     Coins,
     Banknote,
     LayoutGrid,
+    ChevronDown,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 import { PATHS } from '../../routes/paths';
@@ -22,7 +22,7 @@ import {
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const { dateFormat, user, encryptionKey } = useAppSelector(state => state.app);
-    const [activeTab, setActiveTab] = useState<'Altın' | 'Döviz'>('Altın');
+    const [activeTab, setActiveTab] = useState<'ALL' | 'GOLD' | 'CURRENCY'>('ALL');
 
     // RTK Query Hooks with Polling
     const skipQuery = user?.encrypted && !encryptionKey;
@@ -61,19 +61,72 @@ const DashboardPage: React.FC = () => {
     ];
 
     const filteredRates = useMemo(() => {
+        // Whitelist for currencies
+        const ALLOWED_CURRENCIES = ["USD", "EUR", "GBP", "CHF", "CAD", "AUD", "JPY", "SAR", "DKK", "SEK", "NOK", "RUB", "CNY", "AED"];
+
         let results = currencies.filter(cur => {
             const searchLower = searchTerm.toLowerCase();
             const matchSearch = cur.name.toLowerCase().includes(searchLower) || cur.code.toLowerCase().includes(searchLower);
 
-            if (activeTab === 'ALL') return matchSearch;
-            if (activeTab === 'GOLD') return matchSearch && (cur.type === 'Altın' || cur.type === 'Gold');
-            if (activeTab === 'CURRENCY') return matchSearch && (cur.type === 'Döviz');
+            // If searching, show everything that matches
+            if (searchTerm) return matchSearch;
+
+            // Category and Whitelist Filter
+            const isGold = cur.type === 'Altın' || cur.type === 'Gold';
+            const isCurrency = cur.type === 'Döviz';
+
+            // Filter minor currencies unless searching
+            if (isCurrency && !ALLOWED_CURRENCIES.includes(cur.code) && !ALLOWED_CURRENCIES.includes(cur.name)) {
+                return false;
+            }
+
+            if (activeTab === 'ALL') return isGold || isCurrency;
+            if (activeTab === 'GOLD') return isGold;
+            if (activeTab === 'CURRENCY') return isCurrency;
+
             return matchSearch;
         });
 
-        // Optional: Sort logic can be added here if needed, consistent with Market Page
+        // Sorting Logic
+        results.sort((a, b) => {
+            const isGoldA = a.type === 'Altın' || a.type === 'Gold';
+            const isGoldB = b.type === 'Altın' || b.type === 'Gold';
+
+            if (isGoldA && !isGoldB) return -1;
+            if (!isGoldA && isGoldB) return 1;
+
+            const priorityOrder = ["gram-altin", "ceyrek-altin", "ons", "USD", "EUR", "GBP"];
+            // Check against both name and code for robustness
+            const getIndex = (item: any) => {
+                let idx = priorityOrder.indexOf(item.name);
+                if (idx === -1) idx = priorityOrder.indexOf(item.code);
+                return idx;
+            };
+
+            const indexA = getIndex(a);
+            const indexB = getIndex(b);
+
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+
+            return 0;
+        });
+
         return results;
     }, [currencies, searchTerm, activeTab]);
+
+    // Disclaimer State
+    const [isDisclaimerExpanded, setIsDisclaimerExpanded] = useState(() => {
+        const saved = localStorage.getItem('disclaimerExpanded');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
+
+    const toggleDisclaimer = () => {
+        const newState = !isDisclaimerExpanded;
+        setIsDisclaimerExpanded(newState);
+        localStorage.setItem('disclaimerExpanded', JSON.stringify(newState));
+    };
 
     return (
         <div className="space-y-6 lg:space-y-10 font-sans selection:bg-amber-500/30 selection:text-amber-200">
@@ -99,6 +152,29 @@ const DashboardPage: React.FC = () => {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-10">
                 <div className="xl:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
 
+                    {/* Disclaimer - Collapsible */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 transition-all duration-300">
+                        <div
+                            className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                            onClick={toggleDisclaimer}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500 shrink-0">
+                                    <Info size={20} />
+                                </div>
+                                <h4 className="text-sm font-bold text-amber-500">Önemli Bilgilendirme</h4>
+                            </div>
+                            <ChevronDown className={`w-5 h-5 text-amber-500/50 transition-transform duration-300 ${isDisclaimerExpanded ? 'rotate-180' : ''}`} />
+                        </div>
+
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isDisclaimerExpanded ? 'max-h-40 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed pl-[3.25rem]">
+                                Bu platformda gösterilen altın ve döviz fiyatları, piyasa ortalaması alınarak <strong>tahmini</strong> olarak sunulmaktadır.
+                                Kurumumuz bir borsa veya döviz bürosu değildir; gösterilen değerler üzerinden alım/satım yapılmaz.
+                                Gerçek işlem fiyatları, piyasa koşullarına ve işlem yaptığınız kuruma göre farklılık gösterebilir.
+                            </p>
+                        </div>
+                    </div>
                     {/* Controls Area (Tabs + Search) */}
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
                         {/* Tabs */}
@@ -153,7 +229,7 @@ const DashboardPage: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {filteredRates.map((cur) => {
+                                    {filteredRates.map((cur: any) => {
                                         const isGold = cur.type === 'Altın' || cur.type === 'Gold' || cur.name.includes('Altın');
 
                                         return (
