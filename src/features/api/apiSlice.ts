@@ -97,7 +97,8 @@ export const apiSlice = createApi({
         deleteAsset: builder.mutation<void, { id: number; headers?: Record<string, string> }>({
             query: ({ id, headers }) => ({
                 url: `/assets/${id}`,
-                method: 'DELETE',
+                method: 'POST',
+                data: { _method: 'DELETE' },
                 headers,
             }),
             invalidatesTags: (_result, _error, { id }) => [{ type: 'Assets', id }, { type: 'Assets', id: 'LIST' }, 'Assets'],

@@ -9,7 +9,9 @@ import {
     Banknote,
     Coins,
     Shield,
-    ChevronDown
+    ChevronDown,
+    History,
+    Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,19 +26,58 @@ import { getAssetUnit } from '../../lib/utils';
 import {
     useGetAllAssetsQuery,
     useGetCurrenciesQuery,
+    useDeleteAssetMutation,
 } from '../../features/api/apiSlice';
 import { usePortfolio } from '../../hooks/usePortfolio';
+import { formatDate } from '../../lib/date';
 
 const AssetsPage: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const { user, encryptionKey } = useAppSelector(state => state.app);
+    const { user, encryptionKey, dateFormat } = useAppSelector(state => state.app);
 
     // Security
     const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
     const [securityKey, setSecurityKey] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
+
+    // Delete Logic
+    const [deleteAsset] = useDeleteAssetMutation();
+    const [assetToDelete, setAssetToDelete] = useState<any>(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    const handleDeleteClick = (asset: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setAssetToDelete(asset);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!assetToDelete) return;
+
+        try {
+            const headers: Record<string, string> = user?.encrypted && encryptionKey
+                ? { 'X-Encryption-Key': encryptionKey }
+                : {};
+
+            await deleteAsset({ id: assetToDelete.id, headers }).unwrap();
+            dispatch(addToast({ message: 'Varlık başarıyla silindi.', type: 'success' }));
+            setIsDeleteModalOpen(false);
+            setAssetToDelete(null);
+        } catch (error: any) {
+            // If the server returns 404, it might mean the asset is already deleted or a redirect issue occurred.
+            // In either case, the asset is gone, so we treat it as success.
+            if (error?.status === 404) {
+                dispatch(addToast({ message: 'Varlık silindi.', type: 'success' }));
+                setIsDeleteModalOpen(false);
+                setAssetToDelete(null);
+                return;
+            }
+            const errorMessage = error?.data?.message || `Silme işlemi başarısız oldu (${error?.status || 'Bilinmeyen Hata'}).`;
+            dispatch(addToast({ message: errorMessage, type: 'error' }));
+        }
+    };
 
     // RTK Query
     const skipQuery = user?.encrypted && !encryptionKey;
@@ -206,7 +247,7 @@ const AssetsPage: React.FC = () => {
                             {/* Mobile Card View (< lg) */}
                             <div className="lg:hidden space-y-4">
                                 {portfolioItems.map((item) => {
-                                    const { currency, amount, profitLoss, profitLossPercent, averageCost, currentValue, places } = item;
+                                    const { currency, amount, profitLoss, profitLossPercent, averageCost, currentValue } = item;
                                     if (!currency) return null;
                                     const isProfit = profitLoss >= 0;
                                     const isExpanded = expandedItems.has(item.currencyId);
@@ -217,65 +258,61 @@ const AssetsPage: React.FC = () => {
                                     );
 
                                     return (
-                                        <div key={item.currencyId} className="bg-zinc-800/40 border border-white/5 rounded-xl transition-all overflow-hidden">
+                                        <div key={item.currencyId} className="bg-zinc-800/40 border border-white/5 rounded-xl transition-all overflow-hidden shadow-sm">
                                             {/* Summary Header (Clickable) */}
                                             <div
-                                                className="p-4 flex flex-col gap-4 cursor-pointer hover:bg-white/5 transition-colors"
+                                                className="p-5 flex flex-col gap-5 cursor-pointer hover:bg-white/5 transition-colors"
                                                 onClick={() => toggleExpanded(item.currencyId)}
                                             >
                                                 <div className="flex items-start justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5">
-                                                            <span className="text-sm font-bold text-zinc-400">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center border border-white/5 shadow-inner">
+                                                            <span className="text-base font-black text-zinc-400">
                                                                 {currency.code?.substring(0, 1)}
                                                             </span>
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                <h3 className="font-bold text-base text-white">
+                                                                <h3 className="font-black text-lg text-white tracking-tight">
                                                                     {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
                                                                 </h3>
                                                                 {historyAssets.length > 0 && (
-                                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
-                                                                        <ChevronDown className="w-4 h-4 text-zinc-500" />
+                                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} p-1 bg-white/5 rounded-full`}>
+                                                                        <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <div className="flex items-center gap-2 mt-0.5">
-                                                                <span className="text-xs text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded-md truncate max-w-[150px]">
-                                                                    {Array.from(places).join(', ') || '-'}
-                                                                </span>
-                                                            </div>
+
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-sm">
+                                                <div className="grid grid-cols-2 gap-y-5 gap-x-4">
                                                     <div>
-                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Miktar</p>
-                                                        <p className="text-white font-medium">
-                                                            {amount.toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Miktar</p>
+                                                        <p className="text-white text-base font-bold">
+                                                            {amount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-xs text-zinc-500 mb-0.5">Ort. Maliyet</p>
-                                                        <p className="text-zinc-300 font-medium">
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Ort. Maliyet</p>
+                                                        <p className="text-zinc-300 text-sm font-medium">
                                                             ₺{averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                         </p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Değer</p>
-                                                        <p className="text-white font-bold">
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Değer</p>
+                                                        <p className="text-white text-base font-black">
                                                             ₺{currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Kar/Zarar</p>
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Kar/Zarar</p>
                                                         <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                            <span className="font-bold text-sm">
+                                                            <span className="font-black text-sm">
                                                                 {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                             </span>
-                                                            <span className="text-[10px] font-bold opacity-80">
+                                                            <span className="text-[10px] font-bold opacity-80 mt-0.5">
                                                                 %{Math.abs(profitLossPercent).toFixed(2)}
                                                             </span>
                                                         </div>
@@ -283,41 +320,78 @@ const AssetsPage: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Expanded History */}
+                                            {/* Expanded History - Improved UI */}
                                             {isExpanded && historyAssets.length > 0 && (
-                                                <div className="bg-zinc-900/50 border-t border-white/5 px-4 py-3 space-y-3">
-                                                    <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Alım Geçmişi</p>
+                                                <div className="bg-zinc-950/30 border-t border-white/5 p-5 space-y-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <History className="w-3.5 h-3.5 text-amber-500" />
+                                                        <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Alım Geçmişi</p>
+                                                    </div>
                                                     {historyAssets.map(asset => {
                                                         const assetAmount = parseFloat(asset.amount);
                                                         const assetPrice = parseFloat(asset.price);
                                                         const currentPrice = parseFloat(currency.selling);
                                                         const assetValue = assetAmount * currentPrice;
-                                                        const assetCost = assetAmount * assetPrice;
+                                                        const assetCost = assetAmount * assetPrice; // Total Cost
                                                         const assetPL = assetValue - assetCost;
-                                                        const assetPLPercent = assetCost > 0 ? (assetPL / assetCost) * 100 : 0;
                                                         const isAssetProfit = assetPL >= 0;
 
                                                         return (
-                                                            <div key={asset.id} className="bg-zinc-900 p-3 rounded-lg border border-white/5 text-xs">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-zinc-300 font-bold">{asset.place || 'Bilinmiyor'}</span>
-                                                                        <span className="text-zinc-600 font-medium text-[10px]">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
-                                                                    </div>
-                                                                    <div className={`text-right font-bold ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                                        <div>{isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
-                                                                        <div className="text-[10px] opacity-80">%{Math.abs(assetPLPercent).toFixed(2)}</div>
-                                                                    </div>
+                                                            <div key={asset.id} className="relative bg-zinc-900 border border-white/5 rounded-2xl p-5 overflow-hidden group hover:border-amber-500/20 transition-all shadow-lg shadow-black/20">
+                                                                <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
+                                                                    <Coins className="w-20 h-20" />
                                                                 </div>
-                                                                <div className="flex justify-between items-center text-[10px] text-zinc-500">
-                                                                    <span>
-                                                                        <span className="text-white font-medium">{assetAmount.toLocaleString('tr-TR')}</span> {getAssetUnit(currency.code, currency.name)}
-                                                                        <span className="mx-1">•</span>
-                                                                        <span className="text-zinc-400">₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
-                                                                    </span>
-                                                                    <span className="text-zinc-400">
-                                                                        Değer: <span className="text-white">₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
-                                                                    </span>
+
+                                                                <div className="relative z-10 flex flex-col gap-4">
+                                                                    {/* Header: Date & Place & P/L */}
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div className="flex flex-col">
+                                                                            {asset.place && (
+                                                                                <span className="text-sm font-bold text-white mb-0.5">{asset.place}</span>
+                                                                            )}
+                                                                            <span className="text-xs text-zinc-500 font-medium">
+                                                                                {formatDate(asset.date, dateFormat)}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`text-right font-black ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                                <div className="text-sm">{isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                                                                            </div>
+                                                                            <button
+                                                                                onClick={(e) => handleDeleteClick(asset, e)}
+                                                                                className="p-2 -mr-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Details Grid */}
+                                                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                                                                        <div>
+                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Miktar</p>
+                                                                            <p className="text-sm font-bold text-white">
+                                                                                {assetAmount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Birim Fiyat</p>
+                                                                            <p className="text-sm font-medium text-zinc-400">₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+                                                                        </div>
+
+                                                                        <div>
+                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Toplam Maliyet</p>
+                                                                            <p className="text-sm font-bold text-zinc-300">
+                                                                                ₺{assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Güncel Değer</p>
+                                                                            <p className="text-sm font-bold text-white">
+                                                                                ₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         );
@@ -441,8 +515,8 @@ const AssetsPage: React.FC = () => {
                                                                 </td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-sm font-medium text-zinc-300">{asset.place || 'Belirtilmedi'}</span>
-                                                                        <span className="text-xs text-zinc-500">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
+                                                                        {asset.place && <span className="text-sm font-medium text-zinc-300">{asset.place}</span>}
+                                                                        <span className="text-xs text-zinc-500">{formatDate(asset.date, dateFormat)}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center">
@@ -451,12 +525,25 @@ const AssetsPage: React.FC = () => {
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <span className="text-sm text-zinc-500">
-                                                                        ₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                                    </span>
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className="text-sm font-bold text-zinc-300">
+                                                                            ₺{assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </span>
+                                                                        <span className="text-[10px] text-zinc-500">
+                                                                            @{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </span>
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <span className="text-sm text-zinc-500">-</span>
+                                                                    <div className="flex justify-end">
+                                                                        <button
+                                                                            onClick={(e) => handleDeleteClick(asset, e)}
+                                                                            className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                                            title="Varlığı Sil"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </button>
+                                                                    </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <span className="text-sm font-medium text-zinc-300">
@@ -532,6 +619,43 @@ const AssetsPage: React.FC = () => {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isDeleteModalOpen && assetToDelete && (
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-zinc-950/90 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl p-6 relative overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-lg shadow-red-500/5">
+                                <Trash2 className="w-8 h-8 text-red-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Varlığı Sil</h3>
+                            <p className="text-zinc-400 text-sm mb-6">
+                                <span className="text-white font-bold">{assetToDelete.amount} {getAssetUnit(assetToDelete.currency?.code || '', assetToDelete.currency?.name || '')} </span>
+                                tutarındaki varlık kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => {
+                                        setIsDeleteModalOpen(false);
+                                        setAssetToDelete(null);
+                                    }}
+                                    className="w-full"
+                                >
+                                    İptal
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleConfirmDelete}
+                                    className="w-full border-red-500/20 hover:bg-red-500/10 text-red-500 hover:text-red-400"
+                                >
+                                    Sil
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

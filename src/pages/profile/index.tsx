@@ -9,9 +9,10 @@ import {
     KeyRound,
     Eye,
     EyeOff,
-    Calendar,
     Zap,
-    X
+    X,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -29,6 +30,7 @@ const ProfilePage: React.FC = () => {
 
     const [showKey, setShowKey] = useState(false);
     const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
+    const [isPasswordChangeOpen, setIsPasswordChangeOpen] = useState(false);
 
     // Password Change Form
     const passwordFormik = useFormik({
@@ -120,38 +122,54 @@ const ProfilePage: React.FC = () => {
                         <hr className="border-white/5 mb-8" />
 
                         <form onSubmit={passwordFormik.handleSubmit} className="space-y-6">
-                            <h4 className="text-lg font-bold flex items-center gap-2 mb-4">
-                                <Lock className="w-5 h-5 text-amber-500" /> Şifre Değiştir
-                            </h4>
-                            <Input
-                                label="Mevcut Şifre"
-                                type="password"
-                                name="current_password"
-                                onChange={passwordFormik.handleChange}
-                                value={passwordFormik.values.current_password}
-                                error={passwordFormik.touched.current_password && passwordFormik.errors.current_password ? passwordFormik.errors.current_password : undefined}
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Input
-                                    label="Yeni Şifre"
-                                    type="password"
-                                    name="password"
-                                    onChange={passwordFormik.handleChange}
-                                    value={passwordFormik.values.password}
-                                    error={passwordFormik.touched.password && passwordFormik.errors.password ? passwordFormik.errors.password : undefined}
-                                />
-                                <Input
-                                    label="Yeni Şifre Tekrar"
-                                    type="password"
-                                    name="password_confirmation"
-                                    onChange={passwordFormik.handleChange}
-                                    value={passwordFormik.values.password_confirmation}
-                                    error={passwordFormik.touched.password_confirmation && passwordFormik.errors.password_confirmation ? passwordFormik.errors.password_confirmation : undefined}
-                                />
-                            </div>
-                            <Button type="submit" isLoading={passwordFormik.isSubmitting} className="w-full">
-                                Şifreyi Güncelle
-                            </Button>
+                            <button
+                                type="button"
+                                onClick={() => setIsPasswordChangeOpen(!isPasswordChangeOpen)}
+                                className="w-full flex items-center justify-between group"
+                            >
+                                <h4 className="text-lg font-bold flex items-center gap-2 group-hover:text-amber-500 transition-colors">
+                                    <Lock className="w-5 h-5 text-amber-500" /> Şifre Değiştir
+                                </h4>
+                                {isPasswordChangeOpen ? (
+                                    <ChevronUp className="w-5 h-5 text-zinc-500 group-hover:text-amber-500 transition-colors" />
+                                ) : (
+                                    <ChevronDown className="w-5 h-5 text-zinc-500 group-hover:text-amber-500 transition-colors" />
+                                )}
+                            </button>
+
+                            {isPasswordChangeOpen && (
+                                <div className="space-y-6 animate-in slide-in-from-top-2 duration-200">
+                                    <Input
+                                        label="Mevcut Şifre"
+                                        type="password"
+                                        name="current_password"
+                                        onChange={passwordFormik.handleChange}
+                                        value={passwordFormik.values.current_password}
+                                        error={passwordFormik.touched.current_password && passwordFormik.errors.current_password ? passwordFormik.errors.current_password : undefined}
+                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <Input
+                                            label="Yeni Şifre"
+                                            type="password"
+                                            name="password"
+                                            onChange={passwordFormik.handleChange}
+                                            value={passwordFormik.values.password}
+                                            error={passwordFormik.touched.password && passwordFormik.errors.password ? passwordFormik.errors.password : undefined}
+                                        />
+                                        <Input
+                                            label="Yeni Şifre Tekrar"
+                                            type="password"
+                                            name="password_confirmation"
+                                            onChange={passwordFormik.handleChange}
+                                            value={passwordFormik.values.password_confirmation}
+                                            error={passwordFormik.touched.password_confirmation && passwordFormik.errors.password_confirmation ? passwordFormik.errors.password_confirmation : undefined}
+                                        />
+                                    </div>
+                                    <Button type="submit" isLoading={passwordFormik.isSubmitting} className="w-full">
+                                        Şifreyi Güncelle
+                                    </Button>
+                                </div>
+                            )}
                         </form>
                     </section>
 
