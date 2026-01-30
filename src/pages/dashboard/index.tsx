@@ -12,7 +12,7 @@ import {
     ChevronDown,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
-import { usePortfolio } from '../../hooks/usePortfolio';
+
 import { PATHS } from '../../routes/paths';
 import { formatDate } from '@/lib/date';
 import {
@@ -35,7 +35,6 @@ const DashboardPage: React.FC = () => {
     } = useGetCurrenciesQuery(undefined, { pollingInterval: 60000 });
 
     const {
-        data: assets = [],
         isLoading: isAssetsLoading
     } = useGetAllAssetsQuery(undefined, {
         skip: skipQuery,
@@ -45,7 +44,7 @@ const DashboardPage: React.FC = () => {
     const isLoading = isCurrenciesLoading || (isAssetsLoading && !skipQuery);
 
     // Calculate Total Portfolio Value using correct aggregation logic (handling Sells)
-    const { totalValue: totalPortfolioValue } = usePortfolio(assets, currencies);
+
 
     // Filter and Sort Logic
     const [searchTerm, setSearchTerm] = useState("");
@@ -132,16 +131,7 @@ const DashboardPage: React.FC = () => {
                     <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight mb-2">Panel</h1>
                     <p className="text-xs sm:text-sm lg:text-base text-zinc-500 font-medium">Portföyünüzün genel durumu ve canlı kurlar.</p>
                 </div>
-                {totalPortfolioValue > 0 && (
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 sm:p-4 bg-zinc-900/50 border border-white/10 rounded-xl sm:rounded-2xl backdrop-blur-sm shadow-xl">
-                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Varlık</p>
-                            <p className="text-xl sm:text-2xl lg:text-3xl font-black truncate text-white">
-                                ₺{totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </p>
-                        </div>
-                    </div>
-                )}
+
             </header>
 
             {/* Custom Content Area */}
@@ -242,7 +232,7 @@ const DashboardPage: React.FC = () => {
                                                             <div className="font-bold text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
                                                                 {cur.name}
                                                             </div>
-                                                       </div>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="hidden sm:table-cell px-6 py-5 text-center">
