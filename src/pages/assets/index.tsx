@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Wallet,
     TrendingUp,
@@ -8,7 +8,8 @@ import {
     ArrowRightLeft,
     Banknote,
     Coins,
-    Shield
+    Shield,
+    ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,10 +24,8 @@ import { getAssetUnit } from '../../lib/utils';
 import {
     useGetAllAssetsQuery,
     useGetCurrenciesQuery,
-    Asset,
-    Currency
 } from '../../features/api/apiSlice';
-
+import { usePortfolio } from '../../hooks/usePortfolio';
 
 const AssetsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -54,23 +53,16 @@ const AssetsPage: React.FC = () => {
 
     const isLoading = (isAssetsLoading && !skipQuery) || isCurrenciesLoading;
 
-    // Derived Data
-    const currencyMap = useMemo(() => {
-        const map = new Map<number, Currency>();
-        currencies.forEach(currency => map.set(currency.id, currency));
-        return map;
-    }, [currencies]);
+    // Use Portfolio Hook for Aggregated Data
+    const {
+        totalCost,
+        totalValue,
+        profitLoss,
+        profitLossPercent,
+        items: portfolioItems
+    } = usePortfolio(allAssets, currencies);
 
-    const getCurrencyForAsset = (asset: Asset) => {
-        const byId = currencyMap.get(Number(asset.currency_id));
-        if (byId) return byId;
-
-        const assetCode = asset.currency?.code?.toLowerCase();
-        if (!assetCode) return undefined;
-
-        // Fallback search
-        return currencies.find(cur => cur.code?.toLowerCase() === assetCode);
-    };
+    // Derived Data for fallback lookups if needed (removed currencyMap since hook handles it)
 
     useEffect(() => {
         if (user?.encrypted && !encryptionKey) {
@@ -84,14 +76,12 @@ const AssetsPage: React.FC = () => {
 
         setIsVerifying(true);
         try {
-            // Minimal check to verify key
             await api.get('/assets?page=1', {
                 headers: { 'X-Encryption-Key': securityKey }
             });
             dispatch(setEncryptionKey(securityKey));
             setIsSecurityModalOpen(false);
             dispatch(addToast({ message: 'Şifreleme anahtarı doğrulandı.', type: 'success' }));
-            // RTK Query will automatically refetch because skipQuery becomes false
         } catch (error: any) {
             const errorMessage = error.response?.data?.errors?.[0] || 'Yanlış şifreleme anahtarı.';
             dispatch(addToast({ message: errorMessage, type: 'error' }));
@@ -100,93 +90,17 @@ const AssetsPage: React.FC = () => {
         }
     };
 
-    const calculateTotals = () => {
-        let totalAmount = 0;
-        let totalCost = 0;
-        let totalValue = 0;
+    const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
 
-        if (currencies.length === 0 || allAssets.length === 0) {
-            return { totalAmount: 0, totalCost: 0, totalValue: 0, profitLoss: 0, profitLossPercent: 0 };
+    const toggleExpanded = (id: number) => {
+        const newExpanded = new Set(expandedItems);
+        if (newExpanded.has(id)) {
+            newExpanded.delete(id);
+        } else {
+            newExpanded.add(id);
         }
-
-        allAssets.forEach(asset => {
-            const currency = getCurrencyForAsset(asset);
-
-            if (currency && currency.selling && currency.selling !== '0' && currency.selling !== '0.0000') {
-                const amount = parseFloat(asset.amount);
-                const price = parseFloat(asset.price);
-                const currentPrice = parseFloat(currency.selling);
-
-                if (!isNaN(amount) && !isNaN(price) && !isNaN(currentPrice) && amount > 0 && price > 0 && currentPrice > 0) {
-                    if (asset.type === 'buy') {
-                        totalAmount += amount;
-                        totalCost += amount * price;
-                        totalValue += amount * currentPrice;
-                    } else {
-                        totalAmount -= amount;
-                        totalCost -= amount * price;
-                        totalValue -= amount * currentPrice;
-                    }
-                }
-            }
-        });
-
-        const profitLoss = totalValue - totalCost;
-        const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
-
-        return { totalAmount, totalCost, totalValue, profitLoss, profitLossPercent };
+        setExpandedItems(newExpanded);
     };
-
-    const calculatePortfolio = () => {
-        const stats = new Map<number, { amount: number; totalCost: number; places: Set<string> }>();
-
-        // Sort by date ascending to calculate weighted average correctly
-        // Note: RTK Query data is immutable, so we copy it first
-        const sortedAssets = [...allAssets].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        sortedAssets.forEach(asset => {
-            const amount = parseFloat(asset.amount);
-            const price = parseFloat(asset.price);
-
-            if (!isNaN(amount) && !isNaN(price)) {
-                const currencyId = Number(asset.currency_id);
-                const current = stats.get(currencyId) || { amount: 0, totalCost: 0, places: new Set<string>() };
-
-                if (asset.type === 'buy') {
-                    current.amount += amount;
-                    current.totalCost += amount * price;
-                    if (asset.place) current.places.add(asset.place);
-                } else {
-                    // When selling, reduce cost basis proportionally
-                    if (current.amount > 0) {
-                        const avgPrice = current.totalCost / current.amount;
-                        current.amount -= amount;
-                        current.totalCost -= amount * avgPrice;
-                    } else {
-                        current.amount -= amount;
-                    }
-                }
-                stats.set(currencyId, current);
-            }
-        });
-
-        return stats;
-    };
-
-    const portfolio = useMemo(() => calculatePortfolio(), [allAssets]);
-
-    // Derived balances map for compatibility
-    const balances = useMemo(() => {
-        const bal = new Map<number, number>();
-        portfolio.forEach((value, key) => bal.set(key, value.amount));
-        return bal;
-    }, [portfolio]);
-
-    const totals = calculateTotals();
-
-    const ownedCurrencies = useMemo(() => {
-        return currencies.filter(c => (balances.get(c.id) || 0) > 0);
-    }, [currencies, balances]);
 
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
@@ -214,7 +128,7 @@ const AssetsPage: React.FC = () => {
             </header>
 
             {/* Top Summary Cards */}
-            {!isLoading && allAssets.length > 0 && (
+            {!isLoading && portfolioItems.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-amber-500/0 transition-all duration-300"></div>
@@ -225,7 +139,7 @@ const AssetsPage: React.FC = () => {
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Harcama</p>
                                 <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
-                                    ₺{totals.totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ₺{totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
                         </div>
@@ -239,16 +153,16 @@ const AssetsPage: React.FC = () => {
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Değer</p>
                                 <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
-                                    ₺{totals.totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div className={`group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl sm:col-span-2 lg:col-span-1 overflow-hidden transition-all duration-300 hover:shadow-xl ${totals.profitLoss >= 0 ? 'border-green-500/20 hover:border-green-500/30 hover:shadow-green-500/5' : 'border-red-500/20 hover:border-red-500/30 hover:shadow-red-500/5'}`}>
-                        <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-300 ${totals.profitLoss >= 0 ? 'from-green-500/0 to-green-500/0 group-hover:from-green-500/5 group-hover:to-green-500/0' : 'from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/0'}`}></div>
+                    <div className={`group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl sm:col-span-2 lg:col-span-1 overflow-hidden transition-all duration-300 hover:shadow-xl ${profitLoss >= 0 ? 'border-green-500/20 hover:border-green-500/30 hover:shadow-green-500/5' : 'border-red-500/20 hover:border-red-500/30 hover:shadow-red-500/5'}`}>
+                        <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-300 ${profitLoss >= 0 ? 'from-green-500/0 to-green-500/0 group-hover:from-green-500/5 group-hover:to-green-500/0' : 'from-red-500/0 to-red-500/0 group-hover:from-red-500/5 group-hover:to-red-500/0'}`}></div>
                         <div className="relative flex items-center gap-4">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border shadow-lg transition-transform duration-300 group-hover:scale-110 ${totals.profitLoss >= 0 ? 'bg-gradient-to-br from-green-500/10 to-green-600/10 text-green-500 border-green-500/20 shadow-green-500/5' : 'bg-gradient-to-br from-red-500/10 to-red-600/10 text-red-500 border-red-500/20 shadow-red-500/5'}`}>
-                                {totals.profitLoss >= 0 ? <TrendingUp className="w-7 h-7" /> : <TrendingDown className="w-7 h-7" />}
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border shadow-lg transition-transform duration-300 group-hover:scale-110 ${profitLoss >= 0 ? 'bg-gradient-to-br from-green-500/10 to-green-600/10 text-green-500 border-green-500/20 shadow-green-500/5' : 'bg-gradient-to-br from-red-500/10 to-red-600/10 text-red-500 border-red-500/20 shadow-red-500/5'}`}>
+                                {profitLoss >= 0 ? <TrendingUp className="w-7 h-7" /> : <TrendingDown className="w-7 h-7" />}
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 mb-1">
@@ -260,79 +174,17 @@ const AssetsPage: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <p className={`text-2xl sm:text-3xl font-black truncate tracking-tight ${totals.profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {totals.profitLoss >= 0 ? '+' : ''}₺{Math.abs(totals.profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <p className={`text-2xl sm:text-3xl font-black truncate tracking-tight ${profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {profitLoss >= 0 ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
-                                <p className={`text-xs font-bold mt-1 ${totals.profitLoss >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
-                                    {totals.profitLossPercent >= 0 ? '+' : ''}{totals.profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                <p className={`text-xs font-bold mt-1 ${profitLoss >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
+                                    {profitLossPercent >= 0 ? '+' : ''}{profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* SECTION 1: Varlık Özeti */}
-            <section>
-                <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                    <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">Varlık Özeti</h2>
-                </div>
-
-                {!isLoading && ownedCurrencies.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {ownedCurrencies.map(currency => {
-                            const stat = portfolio.get(currency.id);
-                            if (!stat) return null;
-
-                            const { amount, totalCost } = stat;
-                            const currentPrice = parseFloat(currency.selling);
-                            const totalValue = amount * currentPrice;
-                            const profitLoss = totalValue - totalCost;
-                            const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
-                            const isProfit = profitLoss >= 0;
-
-                            return (
-                                <div key={currency.id} className="group relative bg-zinc-900 border border-white/5 rounded-2xl p-5 hover:border-amber-500/20 transition-all duration-300">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
-                                                <span className="text-sm font-bold text-zinc-400 group-hover:text-amber-500">
-                                                    {currency.code?.substring(0, 1)}
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-base text-white group-hover:text-amber-400 transition-colors">
-                                                    {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
-                                                </h3>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-black text-white tracking-tight">
-                                                {amount.toLocaleString('tr-TR')}
-                                            </span>
-                                            <span className="text-sm font-medium text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm text-zinc-400">₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${isProfit ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                %{Math.abs(profitLossPercent).toFixed(1)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ) : (
-                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-8 text-center">
-                        <p className="text-zinc-500">Henüz varlık özeti bulunmuyor.</p>
-                    </div>
-                )}
-            </section>
 
             {/* SECTION 2: Varlık Detayları */}
             <section className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden">
@@ -353,77 +205,125 @@ const AssetsPage: React.FC = () => {
                         <>
                             {/* Mobile Card View (< lg) */}
                             <div className="lg:hidden space-y-4">
-                                {allAssets.map((asset) => {
-                                    const currency = getCurrencyForAsset(asset);
+                                {portfolioItems.map((item) => {
+                                    const { currency, amount, profitLoss, profitLossPercent, averageCost, currentValue, places } = item;
                                     if (!currency) return null;
-
-                                    const amount = parseFloat(asset.amount);
-                                    const price = parseFloat(asset.price);
-                                    const currentPrice = parseFloat(currency.selling);
-
-                                    if (isNaN(amount) || isNaN(price) || isNaN(currentPrice)) return null;
-
-                                    const totalValue = amount * currentPrice;
-                                    const totalCost = amount * price;
-                                    const profitLoss = totalValue - totalCost;
-                                    const profitLossPercent = totalCost > 0 ? (profitLoss / totalCost) * 100 : 0;
                                     const isProfit = profitLoss >= 0;
+                                    const isExpanded = expandedItems.has(item.currencyId);
+
+                                    // Get history for this currency
+                                    const historyAssets = allAssets.filter(
+                                        a => Number(a.currency_id) === item.currencyId && a.type === 'buy'
+                                    );
 
                                     return (
-                                        <div key={asset.id} className="bg-zinc-800/40 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all">
-                                            <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5">
-                                                        <span className="text-sm font-bold text-zinc-400">
-                                                            {currency.code?.substring(0, 1)}
-                                                        </span>
+                                        <div key={item.currencyId} className="bg-zinc-800/40 border border-white/5 rounded-xl transition-all overflow-hidden">
+                                            {/* Summary Header (Clickable) */}
+                                            <div
+                                                className="p-4 flex flex-col gap-4 cursor-pointer hover:bg-white/5 transition-colors"
+                                                onClick={() => toggleExpanded(item.currencyId)}
+                                            >
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center border border-white/5">
+                                                            <span className="text-sm font-bold text-zinc-400">
+                                                                {currency.code?.substring(0, 1)}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="font-bold text-base text-white">
+                                                                    {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
+                                                                </h3>
+                                                                {historyAssets.length > 0 && (
+                                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                                                                        <ChevronDown className="w-4 h-4 text-zinc-500" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-xs text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded-md truncate max-w-[150px]">
+                                                                    {Array.from(places).join(', ') || '-'}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-sm">
+                                                    <div>
+                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Miktar</p>
+                                                        <p className="text-white font-medium">
+                                                            {amount.toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-xs text-zinc-500 mb-0.5">Ort. Maliyet</p>
+                                                        <p className="text-zinc-300 font-medium">
+                                                            ₺{averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                        </p>
                                                     </div>
                                                     <div>
-                                                        <h3 className="font-bold text-base text-white">
-                                                            {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-0.5">
-                                                            <span className="text-xs text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded-md">
-                                                                {asset.place || 'Belirtilmedi'}
+                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Değer</p>
+                                                        <p className="text-white font-bold">
+                                                            ₺{currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-xs text-zinc-500 mb-0.5">Toplam Kar/Zarar</p>
+                                                        <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                            <span className="font-bold text-sm">
+                                                                {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                                             </span>
-                                                            <span className="text-[10px] text-zinc-600">
-                                                                {new Date(asset.date).toLocaleDateString('tr-TR')}
+                                                            <span className="text-[10px] font-bold opacity-80">
+                                                                %{Math.abs(profitLossPercent).toFixed(2)}
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-y-4 gap-x-4 text-sm">
-                                                <div>
-                                                    <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
-                                                    <p className="text-white font-medium">
-                                                        {amount.toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(currency.code, currency.name)}</span>
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-xs text-zinc-500 mb-0.5">Alış Fiyatı</p>
-                                                    <p className="text-zinc-300 font-medium">₺{price.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
-                                                </div>
+                                            {/* Expanded History */}
+                                            {isExpanded && historyAssets.length > 0 && (
+                                                <div className="bg-zinc-900/50 border-t border-white/5 px-4 py-3 space-y-3">
+                                                    <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Alım Geçmişi</p>
+                                                    {historyAssets.map(asset => {
+                                                        const assetAmount = parseFloat(asset.amount);
+                                                        const assetPrice = parseFloat(asset.price);
+                                                        const currentPrice = parseFloat(currency.selling);
+                                                        const assetValue = assetAmount * currentPrice;
+                                                        const assetCost = assetAmount * assetPrice;
+                                                        const assetPL = assetValue - assetCost;
+                                                        const assetPLPercent = assetCost > 0 ? (assetPL / assetCost) * 100 : 0;
+                                                        const isAssetProfit = assetPL >= 0;
 
-                                                <div>
-                                                    <p className="text-xs text-zinc-500 mb-0.5">Değerim</p>
-                                                    <p className="text-white font-bold">
-                                                        ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                                    </p>
+                                                        return (
+                                                            <div key={asset.id} className="bg-zinc-900 p-3 rounded-lg border border-white/5 text-xs">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-zinc-300 font-bold">{asset.place || 'Bilinmiyor'}</span>
+                                                                        <span className="text-zinc-600 font-medium text-[10px]">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
+                                                                    </div>
+                                                                    <div className={`text-right font-bold ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        <div>{isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                                                                        <div className="text-[10px] opacity-80">%{Math.abs(assetPLPercent).toFixed(2)}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex justify-between items-center text-[10px] text-zinc-500">
+                                                                    <span>
+                                                                        <span className="text-white font-medium">{assetAmount.toLocaleString('tr-TR')}</span> {getAssetUnit(currency.code, currency.name)}
+                                                                        <span className="mx-1">•</span>
+                                                                        <span className="text-zinc-400">₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
+                                                                    </span>
+                                                                    <span className="text-zinc-400">
+                                                                        Değer: <span className="text-white">₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="text-xs text-zinc-500 mb-0.5">Kar/Zarar</p>
-                                                    <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                        <span className="font-bold text-sm">
-                                                            {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold opacity-80">
-                                                            %{Math.abs(profitLossPercent).toFixed(2)}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -431,93 +331,159 @@ const AssetsPage: React.FC = () => {
 
                             {/* Desktop Table View (>= lg) */}
                             <div className="hidden lg:block overflow-x-auto">
-                                <table className="w-full text-left">
+                                <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="border-b border-white/5 text-xs font-black uppercase tracking-widest text-zinc-500">
+                                            <th className="px-4 py-4 w-12"></th>
                                             <th className="px-4 py-4">Varlık</th>
-                                            <th className="px-4 py-4">Yer / Tarih</th>
+                                            <th className="px-4 py-4">Değerlendirme</th>
                                             <th className="px-4 py-4 text-center">Miktar</th>
-                                            <th className="px-4 py-4 text-right">Alış Fiyatı</th>
+                                            <th className="px-4 py-4 text-right">Ort. Fiyat</th>
                                             <th className="px-4 py-4 text-right">Güncel Fiyat</th>
                                             <th className="px-4 py-4 text-right">Değer</th>
                                             <th className="px-4 py-4 text-right">K/Z</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {allAssets.map((asset) => {
-                                            const currency = getCurrencyForAsset(asset);
+                                        {portfolioItems.map((item) => {
+                                            const { currency, amount, averageCost, currentValue, profitLoss, profitLossPercent, places } = item;
                                             if (!currency) return null;
-
-                                            const amount = parseFloat(asset.amount);
-                                            const price = parseFloat(asset.price);
                                             const currentPrice = parseFloat(currency.selling);
-
-                                            if (isNaN(amount) || isNaN(price) || isNaN(currentPrice)) return null;
-
-                                            const totalValue = amount * currentPrice;
-                                            const profitLoss = totalValue - (amount * price);
-                                            const profitLossPercent = (amount * price) > 0 ? (profitLoss / (amount * price)) * 100 : 0;
                                             const isProfit = profitLoss >= 0;
+                                            const isExpanded = expandedItems.has(item.currencyId);
+
+                                            const historyAssets = allAssets.filter(
+                                                a => Number(a.currency_id) === item.currencyId && a.type === 'buy'
+                                            );
 
                                             return (
-                                                <tr key={asset.id} className="hover:bg-white/5 transition-colors group">
-                                                    <td className="px-4 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
-                                                                <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-500">
-                                                                    {currency.code?.substring(0, 1)}
+                                                <React.Fragment key={item.currencyId}>
+                                                    {/* Parent Row */}
+                                                    <tr
+                                                        className={`transition-colors group cursor-pointer ${isExpanded ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                                                        onClick={() => toggleExpanded(item.currencyId)}
+                                                    >
+                                                        <td className="px-4 py-4 text-zinc-500">
+                                                            {historyAssets.length > 0 && (
+                                                                <div className={`transition-transform duration-300 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 ${isExpanded ? 'rotate-180 bg-white/10' : ''}`}>
+                                                                    <ChevronDown className="w-4 h-4" />
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
+                                                                    <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-500">
+                                                                        {currency.code?.substring(0, 1)}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                                                                    {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
                                                                 </span>
                                                             </div>
-                                                            <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
-                                                                {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-bold text-zinc-300">{Array.from(places).join(', ') || '-'}</span>
+                                                                <span className="text-[10px] text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded w-fit mt-1">ÖZET</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-center">
+                                                            <span className="text-sm font-bold text-white">
+                                                                {amount.toLocaleString('tr-TR')}
+                                                                <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
                                                             </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-sm font-bold text-zinc-300">{asset.place || '-'}</span>
-                                                            <span className="text-xs text-zinc-500">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-center">
-                                                        <span className="text-sm font-bold text-white">
-                                                            {amount.toLocaleString('tr-TR')}
-                                                            <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right">
-                                                        <span className="text-sm font-medium text-zinc-400">
-                                                            ₺{price.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right">
-                                                        <span className="text-sm font-bold text-white">
-                                                            ₺{currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right">
-                                                        <span className="text-sm font-black text-white">
-                                                            ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right">
-                                                        <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                            <span className="text-sm font-bold">
-                                                                {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            <span className="text-sm font-medium text-zinc-400">
+                                                                ₺{averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>
-                                                            <span className="text-xs font-bold opacity-80">
-                                                                %{Math.abs(profitLossPercent).toFixed(2)}
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            <span className="text-sm font-bold text-white">
+                                                                ₺{currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            <span className="text-sm font-black text-white">
+                                                                ₺{currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-4 text-right">
+                                                            <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                <span className="text-sm font-bold">
+                                                                    {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                </span>
+                                                                <span className="text-xs font-bold opacity-80">
+                                                                    %{Math.abs(profitLossPercent).toFixed(2)}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+
+                                                    {/* Expanded Children Rows */}
+                                                    {isExpanded && historyAssets.map(asset => {
+                                                        const assetAmount = parseFloat(asset.amount);
+                                                        const assetPrice = parseFloat(asset.price);
+                                                        const assetValue = assetAmount * currentPrice;
+                                                        const assetCost = assetAmount * assetPrice;
+                                                        const assetPL = assetValue - assetCost;
+                                                        const assetPLPercent = assetCost > 0 ? (assetPL / assetCost) * 100 : 0;
+                                                        const isAssetProfit = assetPL >= 0;
+
+                                                        return (
+                                                            <tr key={asset.id} className="bg-zinc-900/40 hover:bg-zinc-900/60 transition-colors">
+                                                                <td className="px-4 py-3 border-l-2 border-amber-500/20"></td>
+                                                                <td className="px-4 py-3">
+                                                                    <div className="pl-4 flex flex-col">
+                                                                        <span className="text-xs text-zinc-400">Alım İşlemi</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-medium text-zinc-300">{asset.place || 'Belirtilmedi'}</span>
+                                                                        <span className="text-xs text-zinc-500">{new Date(asset.date).toLocaleDateString('tr-TR')}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <span className="text-sm text-zinc-300">
+                                                                        {assetAmount.toLocaleString('tr-TR')}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <span className="text-sm text-zinc-500">
+                                                                        ₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <span className="text-sm text-zinc-500">-</span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <span className="text-sm font-medium text-zinc-300">
+                                                                        ₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right">
+                                                                    <div className={`flex flex-col items-end ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
+                                                                        <span className="text-sm font-bold">
+                                                                            {isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        </span>
+                                                                        <span className="text-xs opacity-70">
+                                                                            %{Math.abs(assetPLPercent).toFixed(2)}
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </React.Fragment>
                                             );
                                         })}
                                     </tbody>
                                 </table>
                             </div>
 
-                            {allAssets.length === 0 && (
+                            {portfolioItems.length === 0 && (
                                 <div className="py-12 text-center text-zinc-500">
                                     <div className="flex flex-col items-center gap-3">
                                         <Wallet className="w-10 h-10 opacity-20" />

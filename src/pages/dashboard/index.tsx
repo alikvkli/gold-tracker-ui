@@ -12,6 +12,7 @@ import {
     ChevronDown,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
+import { usePortfolio } from '../../hooks/usePortfolio';
 import { PATHS } from '../../routes/paths';
 import { formatDate } from '@/lib/date';
 import {
@@ -43,13 +44,8 @@ const DashboardPage: React.FC = () => {
 
     const isLoading = isCurrenciesLoading || (isAssetsLoading && !skipQuery);
 
-    const totalPortfolioValue = assets.reduce((total, asset) => {
-        const currency = currencies.find(c => c.id === asset.currency_id);
-        if (currency) {
-            return total + (parseFloat(asset.amount) * parseFloat(currency.selling));
-        }
-        return total;
-    }, 0);
+    // Calculate Total Portfolio Value using correct aggregation logic (handling Sells)
+    const { totalValue: totalPortfolioValue } = usePortfolio(assets, currencies);
 
     // Filter and Sort Logic
     const [searchTerm, setSearchTerm] = useState("");
@@ -246,8 +242,7 @@ const DashboardPage: React.FC = () => {
                                                             <div className="font-bold text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
                                                                 {cur.name}
                                                             </div>
-                                                            <div className="hidden sm:block text-xs text-zinc-500 font-medium">{cur.code}</div>
-                                                        </div>
+                                                       </div>
                                                     </div>
                                                 </td>
                                                 <td className="hidden sm:table-cell px-6 py-5 text-center">
