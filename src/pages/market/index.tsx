@@ -14,15 +14,52 @@ export default function PublicMarketPage() {
     const [activeCategory, setActiveCategory] = useState<Category>('ALL');
 
     const filteredData = useMemo(() => {
-        return currencies.filter(item => {
+        // Whitelist for currencies (to filter out minor ones)
+        const ALLOWED_CURRENCIES = ["USD", "EUR", "GBP", "CHF", "CAD", "AUD", "JPY", "SAR"];
+
+        let results = currencies.filter(item => {
             const matchSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-            if (activeCategory === 'ALL') return matchSearch;
-            if (activeCategory === 'GOLD') return matchSearch && (item.type === 'Altın' || item.name.includes('altin') || item.name.includes('bilezik') || item.name === 'ons');
-            if (activeCategory === 'CURRENCY') return matchSearch && (item.type === 'Döviz');
+            // If searching, show everything that matches
+            if (searchTerm) return matchSearch;
+
+            // Otherwise apply category and whitelist filters
+            const isGold = item.type === 'Altın' || item.type === 'Gold' || item.name.includes('altin') || item.name.includes('bilezik') || item.name === 'ons';
+            const isCurrency = item.type === 'Döviz';
+
+            // Filter minor currencies if category is ALL or CURRENCY
+            if (isCurrency && !ALLOWED_CURRENCIES.includes(item.name)) {
+                return false;
+            }
+
+            if (activeCategory === 'ALL') return isGold || isCurrency;
+            if (activeCategory === 'GOLD') return isGold;
+            if (activeCategory === 'CURRENCY') return isCurrency;
 
             return matchSearch;
         });
+
+        // Sorting Logic: Gold First, then Priority Currencies, then others
+        results.sort((a, b) => {
+            const isGoldA = a.type === 'Altın' || a.name.includes('altin') || a.name === 'ons';
+            const isGoldB = b.type === 'Altın' || b.name.includes('altin') || b.name === 'ons';
+
+            if (isGoldA && !isGoldB) return -1;
+            if (!isGoldA && isGoldB) return 1;
+
+            // Define specific order for popular items
+            const priorityOrder = ["gram-altin", "ceyrek-altin", "ons", "USD", "EUR", "GBP"];
+            const indexA = priorityOrder.indexOf(a.name);
+            const indexB = priorityOrder.indexOf(b.name);
+
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+
+            return 0;
+        });
+
+        return results;
     }, [currencies, searchTerm, activeCategory]);
 
     const categories = [
@@ -74,8 +111,8 @@ export default function PublicMarketPage() {
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id as Category)}
                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isActive
-                                            ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
-                                            : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                                        ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
+                                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
@@ -108,12 +145,12 @@ export default function PublicMarketPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/5 text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
-                                        <th className="px-6 py-5">Varlık İsmi</th>
-                                        <th className="px-6 py-5 text-center">Türü</th>
-                                        <th className="px-6 py-5 text-right">Alış</th>
-                                        <th className="px-6 py-5 text-right">Satış</th>
-                                        <th className="px-6 py-5 text-right">Değişim</th>
+                                    <tr className="border-b border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5">Varlık</th>
+                                        <th className="hidden sm:table-cell px-6 py-5 text-center">Türü</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Alış</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Satış</th>
+                                        <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-5 text-right">Değişim</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
@@ -123,40 +160,40 @@ export default function PublicMarketPage() {
 
                                         return (
                                             <tr key={currency.name} className="group hover:bg-white/5 transition-colors">
-                                                <td className="px-6 py-5">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-300 group-hover:scale-105 ${isGold
-                                                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5'
-                                                                : 'bg-zinc-800 border-white/5 text-zinc-400'
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5">
+                                                    <div className="flex items-center gap-2 sm:gap-4">
+                                                        <div className={`hidden sm:flex w-12 h-12 rounded-2xl items-center justify-center border transition-all duration-300 group-hover:scale-105 ${isGold
+                                                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5'
+                                                            : 'bg-zinc-800 border-white/5 text-zinc-400'
                                                             }`}>
                                                             {isGold ? <Coins className="w-6 h-6" /> : <span className="text-lg font-black">{currency.name.substring(0, 1).toUpperCase()}</span>}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-white text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
+                                                            <div className="font-bold text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
                                                                 {currency.name.replace(/-/g, ' ')}
                                                             </div>
-                                                            <div className="text-xs text-zinc-500 font-medium">Canlı Veri</div>
+                                                            <div className="hidden sm:block text-xs text-zinc-500 font-medium">Canlı Veri</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-5 text-center">
+                                                <td className="hidden sm:table-cell px-6 py-5 text-center">
                                                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isGold
-                                                            ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                                            : 'bg-zinc-800 text-zinc-400 border-white/5'
+                                                        ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                        : 'bg-zinc-800 text-zinc-400 border-white/5'
                                                         }`}>
                                                         {currency.type.toUpperCase()}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-5 text-right">
-                                                    <div className="text-white font-bold font-mono text-base">₺{currency.buying}</div>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
+                                                    <div className="text-white font-bold font-mono text-xs sm:text-base">₺{currency.buying}</div>
                                                 </td>
-                                                <td className="px-6 py-5 text-right">
-                                                    <div className="text-amber-400 font-bold font-mono text-base">₺{currency.selling}</div>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
+                                                    <div className="text-amber-400 font-bold font-mono text-xs sm:text-base">₺{currency.selling}</div>
                                                 </td>
-                                                <td className="px-6 py-5 text-right">
-                                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-bold border ${isPositive
-                                                            ? 'bg-green-500/10 text-green-500 border-green-500/20'
-                                                            : 'bg-red-500/10 text-red-500 border-red-500/20'
+                                                <td className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-5 text-right">
+                                                    <div className={`inline-flex items-center justify-center w-full sm:w-auto px-1.5 py-1 sm:px-3 sm:py-1 rounded-lg text-[10px] sm:text-sm font-bold border ${isPositive
+                                                        ? 'bg-green-500/10 text-green-500 border-green-500/20'
+                                                        : 'bg-red-500/10 text-red-500 border-red-500/20'
                                                         }`}>
                                                         {currency.change}
                                                     </div>
@@ -169,10 +206,10 @@ export default function PublicMarketPage() {
                         </div>
 
                         {/* Footer / Stats */}
-                        <div className="px-6 py-4 bg-zinc-950/30 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+                        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-zinc-950/30 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] sm:text-xs text-zinc-500">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                                <span>Veriler finans.truncgil.com üzerinden anlık olarak sağlanmaktadır.</span>
+                                <span>Canlı Piyasa Verileri</span>
                             </div>
                             <span className="font-mono opacity-60">Son Güncelleme: {lastUpdate}</span>
                         </div>

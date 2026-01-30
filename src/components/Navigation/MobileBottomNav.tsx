@@ -14,7 +14,7 @@ const MobileBottomNav: React.FC = () => {
             label: 'Ana Sayfa',
             icon: <Home className="w-5 h-5" />,
             action: () => navigate(PATHS.HOME),
-            isActive: isActive(PATHS.HOME) || isActive(PATHS.ROOT)
+            isActive: isActive(PATHS.HOME) || isActive(PATHS.ROOT) || isActive(PATHS.MARKET)
         },
         {
             label: 'Özellikler',
@@ -51,8 +51,8 @@ const MobileBottomNav: React.FC = () => {
                         key={index}
                         onClick={item.action}
                         className={`flex flex-col items-center justify-center gap-1.5 transition-all duration-300 relative ${item.highlight
-                                ? 'text-zinc-950'
-                                : item.isActive ? 'text-amber-500' : 'text-zinc-500 hover:text-zinc-300'
+                            ? 'text-zinc-950'
+                            : item.isActive ? 'text-amber-500' : 'text-zinc-500 hover:text-zinc-300'
                             }`}
                     >
                         {item.highlight ? (

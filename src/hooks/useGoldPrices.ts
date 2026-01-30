@@ -35,7 +35,25 @@ export const useGoldPrices = () => {
                 const jsonData: RawGoldData = await response.json();
 
                 // Extract update time
-                const updateDate = jsonData.Update_Date as string;
+                let updateDate = jsonData.Update_Date as string;
+
+                // Try to parse and format date if valid
+                try {
+                    // Update_Date format usually "YYYY-MM-DD HH:mm:ss" from truncgil
+                    const date = new Date(updateDate);
+                    if (!isNaN(date.getTime())) {
+                        updateDate = date.toLocaleString('tr-TR', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                } catch (e) {
+                    console.error("Date parsing error", e);
+                }
+
                 setLastUpdate(updateDate);
 
                 // Transform data array

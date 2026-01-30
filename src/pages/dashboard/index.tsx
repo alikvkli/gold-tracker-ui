@@ -6,6 +6,10 @@ import {
     History,
     Loader2,
     Info,
+    Search,
+    Coins,
+    Banknote,
+    LayoutGrid,
 } from 'lucide-react';
 import { useAppSelector } from '../../hooks';
 import { PATHS } from '../../routes/paths';
@@ -47,18 +51,32 @@ const DashboardPage: React.FC = () => {
         return total;
     }, 0);
 
-    const filteredRates = currencies.filter(c => {
-        if (activeTab === 'Altın') return c.type === 'Altın' || c.type === 'Gold';
-        return c.type === 'Döviz';
-    });
+    // Filter and Sort Logic
+    const [searchTerm, setSearchTerm] = useState("");
 
-    // Altın adından parantez içindeki kodları temizle (örn: "Ons Altın (ons_altin)" -> "Ons Altın")
-    const cleanCurrencyName = (name: string): string => {
-        return name.replace(/\s*\([^)]*\)\s*/g, '').trim();
-    };
+    const categories = [
+        { id: 'ALL', label: 'Tümü', icon: LayoutGrid },
+        { id: 'GOLD', label: 'Altın', icon: Coins },
+        { id: 'CURRENCY', label: 'Döviz', icon: Banknote },
+    ];
+
+    const filteredRates = useMemo(() => {
+        let results = currencies.filter(cur => {
+            const searchLower = searchTerm.toLowerCase();
+            const matchSearch = cur.name.toLowerCase().includes(searchLower) || cur.code.toLowerCase().includes(searchLower);
+
+            if (activeTab === 'ALL') return matchSearch;
+            if (activeTab === 'GOLD') return matchSearch && (cur.type === 'Altın' || cur.type === 'Gold');
+            if (activeTab === 'CURRENCY') return matchSearch && (cur.type === 'Döviz');
+            return matchSearch;
+        });
+
+        // Optional: Sort logic can be added here if needed, consistent with Market Page
+        return results;
+    }, [currencies, searchTerm, activeTab]);
 
     return (
-        <div className="space-y-6 lg:space-y-10">
+        <div className="space-y-6 lg:space-y-10 font-sans selection:bg-amber-500/30 selection:text-amber-200">
             {/* Header */}
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
                 <div>
@@ -67,8 +85,9 @@ const DashboardPage: React.FC = () => {
                 </div>
                 {totalPortfolioValue > 0 && (
                     <div className="flex items-center gap-3">
-                        <div className="p-3 sm:p-4 bg-white/5 border border-white/10 rounded-xl sm:rounded-2xl">
-                            <p className="text-base sm:text-lg lg:text-xl font-black truncate">
+                        <div className="p-3 sm:p-4 bg-zinc-900/50 border border-white/10 rounded-xl sm:rounded-2xl backdrop-blur-sm shadow-xl">
+                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Varlık</p>
+                            <p className="text-xl sm:text-2xl lg:text-3xl font-black truncate text-white">
                                 ₺{totalPortfolioValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
                         </div>
@@ -79,108 +98,120 @@ const DashboardPage: React.FC = () => {
             {/* Custom Content Area */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-10">
                 <div className="xl:col-span-2 space-y-4 sm:space-y-6 lg:space-y-8">
-                    {/* Disclaimer */}
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex gap-3 items-start">
-                        <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500 shrink-0">
-                            <Info size={20} />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-amber-500 mb-0.5">Önemli Bilgilendirme</h4>
-                            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                                Bu platformda gösterilen altın ve döviz fiyatları, piyasa ortalaması alınarak <strong>tahmini</strong> olarak sunulmaktadır.
-                                Kurumumuz bir borsa veya döviz bürosu değildir; gösterilen değerler üzerinden alım/satım yapılmaz.
-                                Gerçek işlem fiyatları, piyasa koşullarına ve işlem yaptığınız kuruma göre farklılık gösterebilir.
-                            </p>
-                        </div>
-                    </div>
 
-                    {/* Tab Switcher */}
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex p-1 sm:p-1.5 bg-zinc-900 border border-white/5 rounded-xl sm:rounded-2xl w-full sm:w-auto">
-                            <button
-                                onClick={() => setActiveTab('Altın')}
-                                className={`flex-1 sm:flex-none px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'Altın'
-                                    ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                    : 'text-zinc-500 hover:text-white'
-                                    }`}
-                            >
-                                Altın
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('Döviz')}
-                                className={`flex-1 sm:flex-none px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-2.5 lg:py-3 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'Döviz'
-                                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
-                                    : 'text-zinc-500 hover:text-white'
-                                    }`}
-                            >
-                                Döviz
-                            </button>
+                    {/* Controls Area (Tabs + Search) */}
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-zinc-900/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+                        {/* Tabs */}
+                        <div className="flex p-1 bg-zinc-900 rounded-xl border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
+                            {categories.map((cat) => {
+                                const Icon = cat.icon;
+                                const isActive = activeTab === cat.id;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setActiveTab(cat.id as any)}
+                                        className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isActive
+                                            ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
+                                            : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                        {cat.label}
+                                    </button>
+                                );
+                            })}
                         </div>
 
-                        <div className={`hidden sm:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/5 text-[10px] font-bold uppercase tracking-widest shrink-0 ${activeTab === 'Altın' ? 'text-amber-500 bg-amber-500/5' : 'text-blue-500 bg-blue-500/5'
-                            }`}>
-                            <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${activeTab === 'Altın' ? 'bg-amber-500' : 'bg-blue-500'
-                                }`} />
-                            Canlı Veri
+                        {/* Search */}
+                        <div className="relative w-full md:w-72 group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Varlık ara..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-zinc-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all text-sm placeholder:text-zinc-600"
+                            />
                         </div>
                     </div>
 
                     {/* Rates Table */}
-                    <div className="bg-zinc-900/40 border border-white/5 rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] overflow-hidden backdrop-blur-xl shadow-2xl relative">
+                    <div className="bg-zinc-900/40 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl relative min-h-[400px]">
                         {isLoading && (
                             <div className="absolute inset-0 z-10 bg-zinc-950/20 backdrop-blur-sm flex items-center justify-center">
-                                <Loader2 className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500 animate-spin" />
+                                <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
                             </div>
                         )}
-                        <div className="overflow-x-auto -mx-2 sm:mx-0">
-                            <table className="w-full text-left border-collapse min-w-[300px] sm:min-w-[400px] md:min-w-[500px]">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-white/5">
-                                        <th className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6 text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5">Varlık</th>
-                                        <th className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6 text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5">Alış</th>
-                                        <th className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6 text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] border-b border-white/5 text-right">Satış</th>
+                                    <tr className="border-b border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5">Varlık</th>
+                                        <th className="hidden sm:table-cell px-6 py-5 text-center">Türü</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Alış</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Satış</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {filteredRates.map((cur) => (
-                                        <tr key={cur.id} className="group hover:bg-white/[0.02] transition-colors border-b border-white/5 last:border-0">
-                                            <td className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6">
-                                                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4">
-                                                    <div className={`hidden sm:flex w-7 h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 rounded-lg md:rounded-xl items-center justify-center font-black text-[9px] sm:text-[10px] md:text-xs border shrink-0 ${activeTab === 'Altın'
-                                                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
-                                                        : 'bg-blue-500/10 border-blue-500/20 text-blue-500'
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredRates.map((cur) => {
+                                        const isGold = cur.type === 'Altın' || cur.type === 'Gold' || cur.name.includes('Altın');
+
+                                        return (
+                                            <tr key={cur.id} className="group hover:bg-white/5 transition-colors">
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5">
+                                                    <div className="flex items-center gap-2 sm:gap-4">
+                                                        <div className={`hidden sm:flex w-12 h-12 rounded-2xl items-center justify-center border transition-all duration-300 group-hover:scale-105 ${isGold
+                                                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5'
+                                                            : 'bg-zinc-800 border-white/5 text-zinc-400'
+                                                            }`}>
+                                                            {isGold ? <Coins className="w-6 h-6" /> : <span className="text-lg font-black">{cur.code.substring(0, 1).toUpperCase()}</span>}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
+                                                                {cur.name}
+                                                            </div>
+                                                            <div className="hidden sm:block text-xs text-zinc-500 font-medium">{cur.code}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="hidden sm:table-cell px-6 py-5 text-center">
+                                                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isGold
+                                                        ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                        : 'bg-zinc-800 text-zinc-400 border-white/5'
                                                         }`}>
-                                                        {cur.code.substring(0, 3)}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="text-[11px] sm:text-xs md:text-sm font-black text-white group-hover:text-amber-400 transition-colors uppercase truncate">
-                                                            {activeTab === 'Altın' ? cleanCurrencyName(cur.name) : cur.code}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] sm:text-xs md:text-sm font-black text-zinc-400">₺{parseFloat(cur.buying).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</span>
-                                                    <div className="hidden sm:flex items-center gap-1 mt-1 text-[9px] text-green-400/50 font-bold uppercase tracking-tighter">
-                                                        <TrendingUp className="w-2.5 h-2.5" /> +0.12%
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 lg:py-5 xl:py-6 text-right">
-                                                <p className={`text-xs sm:text-sm md:text-base lg:text-lg font-black tracking-tight ${activeTab === 'Altın' ? 'text-amber-500' : 'text-blue-500'
-                                                    }`}>
-                                                    ₺{parseFloat(cur.selling).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                                                </p>
-                                                <p className="text-[8px] sm:text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1 hidden sm:block">
-                                                    {formatDate(cur.last_updated_at || new Date().toISOString(), dateFormat)}
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                        {cur.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
+                                                    <div className="text-white font-bold font-mono text-xs sm:text-base">₺{parseFloat(cur.buying).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                                                </td>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
+                                                    <div className="text-amber-400 font-bold font-mono text-xs sm:text-base">₺{parseFloat(cur.selling).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Footer / Stats */}
+                        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-zinc-950/30 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] sm:text-xs text-zinc-500">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                <span>Canlı Piyasa Verileri</span>
+                            </div>
+                            {/* Using first item's date as general update time, or current time if polling */}
+                            <span className="font-mono opacity-60">Son Güncelleme: {currencies[0]?.last_updated_at ? formatDate(currencies[0].last_updated_at, dateFormat) : 'Yükleniyor...'}</span>
+                        </div>
+
+                        {filteredRates.length === 0 && (
+                            <div className="py-20 text-center">
+                                <Search className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+                                <h3 className="text-white font-bold text-lg mb-1">Sonuç Bulunamadı</h3>
+                                <p className="text-zinc-500">Aradığınız kriterlere uygun varlık bulunmuyor.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
