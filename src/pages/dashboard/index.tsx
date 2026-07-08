@@ -356,20 +356,7 @@ const DashboardPage: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center">
-                                    <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 bg-white/5 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 md:mb-6">
-                                        <History className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-zinc-700" />
-                                    </div>
-                                    <p className="text-[11px] sm:text-xs md:text-sm font-bold text-zinc-500 leading-relaxed">
-                                        Tüm işlemlerinizi detaylı olarak incelemek ister misiniz?
-                                    </p>
-                                    <button
-                                        onClick={() => navigate(PATHS.TRANSACTIONS)}
-                                        className="w-full mt-4 sm:mt-6 md:mt-8 text-[9px] sm:text-[10px] font-black px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 bg-white text-zinc-900 rounded-lg sm:rounded-xl md:rounded-2xl hover:bg-amber-500 hover:text-zinc-900 transition-all uppercase tracking-[0.2em] shadow-xl"
-                                    >
-                                        Dökümü Aç
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
                     </div>

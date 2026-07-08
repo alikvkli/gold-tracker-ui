@@ -107,8 +107,9 @@ const AssetsPage: React.FC = () => {
     } = usePortfolio(allAssets, currencies);
 
     const [isBlurred, setIsBlurred] = useState(false);
+    const [chartFilter, setChartFilter] = useState<'all' | '1y' | '1m' | '1w'>('all');
 
-    const chartData = React.useMemo(() => {
+    const rawChartData = React.useMemo(() => {
         if (!allAssets.length || !currencies.length) return [];
         const sortedAssets = [...allAssets].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         
@@ -131,12 +132,38 @@ const AssetsPage: React.FC = () => {
             }
             
             return {
+                timestamp: new Date(asset.date).getTime(),
                 date: new Date(asset.date).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric', year: '2-digit' }),
                 Maliyet: cumulativeCost,
                 Değer: cumulativeValue,
             };
         }).filter(Boolean);
     }, [allAssets, currencies]);
+
+    const chartData = React.useMemo(() => {
+        if (chartFilter === 'all' || rawChartData.length === 0) return rawChartData;
+        
+        const now = Date.now();
+        let threshold = 0;
+        if (chartFilter === '1w') threshold = now - 7 * 24 * 60 * 60 * 1000;
+        if (chartFilter === '1m') threshold = now - 30 * 24 * 60 * 60 * 1000;
+        if (chartFilter === '1y') threshold = now - 365 * 24 * 60 * 60 * 1000;
+
+        const beforeData = rawChartData.filter(d => d.timestamp < threshold);
+        const baseline = beforeData.length > 0 ? beforeData[beforeData.length - 1] : { timestamp: threshold, date: '', Maliyet: 0, Değer: 0 };
+        
+        let result = rawChartData.filter(d => d.timestamp >= threshold);
+        
+        if (result.length > 0 && result[0].timestamp > threshold) {
+            result = [{ ...baseline, timestamp: threshold, date: new Date(threshold).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }) }, ...result];
+        } else if (result.length === 0 && beforeData.length > 0) {
+            result = [
+                { ...baseline, timestamp: threshold, date: new Date(threshold).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }) },
+                { ...baseline, timestamp: now, date: new Date(now).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }) }
+            ];
+        }
+        return result;
+    }, [rawChartData, chartFilter]);
 
     // Derived Data for fallback lookups if needed (removed currencyMap since hook handles it)
 
@@ -272,11 +299,19 @@ const AssetsPage: React.FC = () => {
             )}
 
             {/* Chart Section */}
-            {!isLoading && chartData.length > 1 && (
-                <div className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[300px] sm:h-[400px] w-full shadow-2xl">
-                    <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
-                    </h2>
+            {!isLoading && rawChartData.length > 1 && (
+                <div className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[350px] sm:h-[400px] w-full shadow-2xl">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
+                        </h2>
+                        <div className="flex items-center gap-1 p-1 bg-zinc-950 border border-white/5 rounded-xl self-end sm:self-auto">
+                            <button onClick={() => setChartFilter('1w')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1w' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1H</button>
+                            <button onClick={() => setChartFilter('1m')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1m' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1A</button>
+                            <button onClick={() => setChartFilter('1y')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1y' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1Y</button>
+                            <button onClick={() => setChartFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === 'all' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>Tümü</button>
+                        </div>
+                    </div>
                     <div className="w-full h-full pb-8">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
@@ -369,29 +404,29 @@ const AssetsPage: React.FC = () => {
                                                     <div>
                                                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Miktar</p>
                                                         <p className="text-white text-base font-bold">
-                                                            {amount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
+                                                            {isBlurred ? '***,**' : amount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Ort. Maliyet</p>
                                                         <p className="text-zinc-300 text-sm font-medium">
-                                                            ₺{averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                            {isBlurred ? '₺***,**' : `₺${averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                         </p>
                                                     </div>
                                                     <div>
                                                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Değer</p>
                                                         <p className="text-white text-base font-black">
-                                                            ₺{currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                            {isBlurred ? '₺***,**' : `₺${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Kar/Zarar</p>
                                                         <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
                                                             <span className="font-black text-sm">
-                                                                {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                                {isBlurred ? '₺***,**' : `${isProfit ? '+' : ''}₺${Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                             </span>
                                                             <span className="text-[10px] font-bold opacity-80 mt-0.5">
-                                                                %{Math.abs(profitLossPercent).toFixed(2)}
+                                                                {isBlurred ? '%***,**' : `%${Math.abs(profitLossPercent).toFixed(2)}`}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -433,7 +468,7 @@ const AssetsPage: React.FC = () => {
                                                                         </div>
                                                                         <div className="flex items-center gap-3">
                                                                             <div className={`text-right font-black ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
-                                                                                <div className="text-sm">{isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+                                                                                <div className="text-sm">{isBlurred ? '₺***,**' : `${isAssetProfit ? '+' : ''}₺${Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}</div>
                                                                             </div>
                                                                             <button
                                                                                 onClick={(e) => handleDeleteClick(asset, e)}
@@ -449,24 +484,24 @@ const AssetsPage: React.FC = () => {
                                                                         <div>
                                                                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Miktar</p>
                                                                             <p className="text-sm font-bold text-white">
-                                                                                {assetAmount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
+                                                                                {isBlurred ? '***,**' : assetAmount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">
                                                                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Birim Fiyat</p>
-                                                                            <p className="text-sm font-medium text-zinc-400">₺{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+                                                                            <p className="text-sm font-medium text-zinc-400">{isBlurred ? '₺***,**' : `₺${assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}</p>
                                                                         </div>
 
                                                                         <div>
                                                                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Toplam Maliyet</p>
                                                                             <p className="text-sm font-bold text-zinc-300">
-                                                                                ₺{assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                                                {isBlurred ? '₺***,**' : `₺${assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">
                                                                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Güncel Değer</p>
                                                                             <p className="text-sm font-bold text-white">
-                                                                                ₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                                                                                {isBlurred ? '₺***,**' : `₺${assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                                             </p>
                                                                         </div>
                                                                     </div>
@@ -536,19 +571,19 @@ const AssetsPage: React.FC = () => {
                                                         </td>
                                                         <td className="px-4 py-4">
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-bold text-zinc-300">{Array.from(places).join(', ') || '-'}</span>
+                                                                <span className="text-sm font-bold text-zinc-300">{places.size > 1 ? `${places.size} Farklı Konum` : (Array.from(places)[0] || '-')}</span>
                                                                 <span className="text-[10px] text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded w-fit mt-1">ÖZET</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-4 py-4 text-center">
                                                             <span className="text-sm font-bold text-white">
-                                                                {amount.toLocaleString('tr-TR')}
+                                                                {isBlurred ? '***,**' : amount.toLocaleString('tr-TR')}
                                                                 <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
                                                             <span className="text-sm font-medium text-zinc-400">
-                                                                ₺{averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {isBlurred ? '₺***,**' : `₺${averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
@@ -558,16 +593,16 @@ const AssetsPage: React.FC = () => {
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
                                                             <span className="text-sm font-black text-white">
-                                                                ₺{currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                {isBlurred ? '₺***,**' : `₺${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
                                                             <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
                                                                 <span className="text-sm font-bold">
-                                                                    {isProfit ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    {isBlurred ? '₺***,**' : `${isProfit ? '+' : ''}₺${Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                 </span>
                                                                 <span className="text-xs font-bold opacity-80">
-                                                                    %{Math.abs(profitLossPercent).toFixed(2)}
+                                                                    {isBlurred ? '%***,**' : `%${Math.abs(profitLossPercent).toFixed(2)}`}
                                                                 </span>
                                                             </div>
                                                         </td>
@@ -599,16 +634,16 @@ const AssetsPage: React.FC = () => {
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center">
                                                                     <span className="text-sm text-zinc-300">
-                                                                        {assetAmount.toLocaleString('tr-TR')}
+                                                                        {isBlurred ? '***,**' : assetAmount.toLocaleString('tr-TR')}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <div className="flex flex-col items-end">
                                                                         <span className="text-sm font-bold text-zinc-300">
-                                                                            ₺{assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            {isBlurred ? '₺***,**' : `₺${assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </span>
                                                                         <span className="text-[10px] text-zinc-500">
-                                                                            @{assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            {isBlurred ? '@₺***,**' : `@₺${assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </span>
                                                                     </div>
                                                                 </td>
@@ -625,16 +660,16 @@ const AssetsPage: React.FC = () => {
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <span className="text-sm font-medium text-zinc-300">
-                                                                        ₺{assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                        {isBlurred ? '₺***,**' : `₺${assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <div className={`flex flex-col items-end ${isAssetProfit ? 'text-green-500' : 'text-red-500'}`}>
                                                                         <span className="text-sm font-bold">
-                                                                            {isAssetProfit ? '+' : ''}₺{Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                            {isBlurred ? '₺***,**' : `${isAssetProfit ? '+' : ''}₺${Math.abs(assetPL).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </span>
                                                                         <span className="text-xs opacity-70">
-                                                                            %{Math.abs(assetPLPercent).toFixed(2)}
+                                                                            {isBlurred ? '%***,**' : `%${Math.abs(assetPLPercent).toFixed(2)}`}
                                                                         </span>
                                                                     </div>
                                                                 </td>
