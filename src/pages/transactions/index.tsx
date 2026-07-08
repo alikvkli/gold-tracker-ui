@@ -294,7 +294,7 @@ const TransactionsPage: React.FC = () => {
             <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                        <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-2xl items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/5">
                             <ArrowRightLeft className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
                         </div>
                         <div>

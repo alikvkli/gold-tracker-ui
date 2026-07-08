@@ -210,7 +210,7 @@ const AssetsPage: React.FC = () => {
             <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl flex items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                        <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/5">
                             <Wallet className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
                         </div>
                         <div>
@@ -245,7 +245,7 @@ const AssetsPage: React.FC = () => {
                     <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-amber-500/0 transition-all duration-300"></div>
                         <div className="relative flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-2xl flex items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-lg shadow-amber-500/5 group-hover:scale-110 transition-transform duration-300">
+                            <div className="hidden sm:flex w-14 h-14 bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-2xl items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-lg shadow-amber-500/5 group-hover:scale-110 transition-transform duration-300">
                                 <Wallet className="w-7 h-7" />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -259,7 +259,7 @@ const AssetsPage: React.FC = () => {
                     <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-blue-500/0 transition-all duration-300"></div>
                         <div className="relative flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl flex items-center justify-center text-blue-500 shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5 group-hover:scale-110 transition-transform duration-300">
+                            <div className="hidden sm:flex w-14 h-14 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl items-center justify-center text-blue-500 shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5 group-hover:scale-110 transition-transform duration-300">
                                 <Banknote className="w-7 h-7" />
                             </div>
                             <div className="min-w-0 flex-1">
@@ -303,7 +303,7 @@ const AssetsPage: React.FC = () => {
                 <div className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[350px] sm:h-[400px] w-full shadow-2xl">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
+                            <TrendingUp className="hidden sm:block w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
                         </h2>
                         <div className="flex items-center gap-1 p-1 bg-zinc-950 border border-white/5 rounded-xl self-end sm:self-auto">
                             <button onClick={() => setChartFilter('1w')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1w' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1H</button>
@@ -343,7 +343,7 @@ const AssetsPage: React.FC = () => {
             {/* SECTION 2: Varlık Detayları */}
             <section className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden">
                 <div className="flex items-center gap-2 mb-6">
-                    <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                    <div className="hidden sm:block p-2 bg-amber-500/10 rounded-lg text-amber-500">
                         <Coins size={20} />
                     </div>
                     <h2 className="text-xl font-bold text-white">Varlık Detayları</h2>
