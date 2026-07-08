@@ -1,17 +1,22 @@
 import { useGoldPrices } from "@/hooks/useGoldPrices";
-import { Loader2, ArrowLeft, Search, Coins, Banknote, LayoutGrid } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Coins, Banknote, LayoutGrid, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PATHS } from "@/routes/paths";
 import { useState, useMemo } from "react";
 import MobileBottomNav from "@/components/Navigation/MobileBottomNav";
 import Footer from "@/components/Footer";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/store";
+import { toggleFavoriteUnit } from "@/features/app";
 
-type Category = 'ALL' | 'GOLD' | 'CURRENCY';
+type Category = 'ALL' | 'GOLD' | 'CURRENCY' | 'FAVORITES';
 
 export default function PublicMarketPage() {
     const { data: currencies, isLoading, lastUpdate } = useGoldPrices();
     const [searchTerm, setSearchTerm] = useState("");
     const [activeCategory, setActiveCategory] = useState<Category>('ALL');
+    const favoriteUnits = useSelector((state: RootState) => state.app.favoriteUnits) || [];
+    const dispatch = useDispatch();
 
     const filteredData = useMemo(() => {
         // Whitelist for currencies (to filter out minor ones)
@@ -32,6 +37,7 @@ export default function PublicMarketPage() {
                 return false;
             }
 
+            if (activeCategory === 'FAVORITES') return favoriteUnits.includes(item.name);
             if (activeCategory === 'ALL') return isGold || isCurrency;
             if (activeCategory === 'GOLD') return isGold;
             if (activeCategory === 'CURRENCY') return isCurrency;
@@ -63,6 +69,7 @@ export default function PublicMarketPage() {
     }, [currencies, searchTerm, activeCategory]);
 
     const categories = [
+        { id: 'FAVORITES', label: 'Favoriler', icon: Star },
         { id: 'ALL', label: 'Tümü', icon: LayoutGrid },
         { id: 'GOLD', label: 'Altın', icon: Coins },
         { id: 'CURRENCY', label: 'Döviz', icon: Banknote },
@@ -147,6 +154,7 @@ export default function PublicMarketPage() {
                                 <thead>
                                     <tr className="border-b border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
                                         <th className="px-3 py-3 sm:px-6 sm:py-5">Varlık</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12"></th>
                                         <th className="hidden sm:table-cell px-6 py-5 text-center">Türü</th>
                                         <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Alış</th>
                                         <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Satış</th>
@@ -175,6 +183,14 @@ export default function PublicMarketPage() {
                                                             <div className="hidden sm:block text-xs text-zinc-500 font-medium">Canlı Veri</div>
                                                         </div>
                                                     </div>
+                                                </td>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12">
+                                                    <button 
+                                                        onClick={() => dispatch(toggleFavoriteUnit(currency.name))}
+                                                        className={`p-2 rounded-full transition-colors ${favoriteUnits.includes(currency.name) ? 'text-amber-500 bg-amber-500/10' : 'text-zinc-600 hover:text-amber-500 hover:bg-zinc-800'}`}
+                                                    >
+                                                        <Star className="w-5 h-5" fill={favoriteUnits.includes(currency.name) ? "currentColor" : "none"} />
+                                                    </button>
                                                 </td>
                                                 <td className="hidden sm:table-cell px-6 py-5 text-center">
                                                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isGold

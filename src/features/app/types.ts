@@ -13,4 +13,5 @@ export interface InitialStateProps {
     user: User | null;
     encryptionKey: string | null;
     dateFormat: 'relative' | 'standard';
+    favoriteUnits: string[];
 }

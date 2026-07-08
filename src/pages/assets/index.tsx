@@ -11,8 +11,11 @@ import {
     Shield,
     ChevronDown,
     History,
-    Trash2
+    Trash2,
+    Eye,
+    EyeOff
 } from 'lucide-react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 import { PATHS } from '../../routes/paths';
@@ -103,6 +106,38 @@ const AssetsPage: React.FC = () => {
         items: portfolioItems
     } = usePortfolio(allAssets, currencies);
 
+    const [isBlurred, setIsBlurred] = useState(false);
+
+    const chartData = React.useMemo(() => {
+        if (!allAssets.length || !currencies.length) return [];
+        const sortedAssets = [...allAssets].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
+        let cumulativeCost = 0;
+        let cumulativeValue = 0;
+        return sortedAssets.map(asset => {
+            const curr = currencies.find(c => Number(c.id) === Number(asset.currency_id));
+            if (!curr) return null;
+            
+            const amount = parseFloat(asset.amount);
+            const buyPrice = parseFloat(asset.price);
+            const currentPrice = parseFloat(curr.selling);
+            
+            if (asset.type === 'buy') {
+                cumulativeCost += amount * buyPrice;
+                cumulativeValue += amount * currentPrice;
+            } else {
+                cumulativeCost -= amount * buyPrice;
+                cumulativeValue -= amount * currentPrice;
+            }
+            
+            return {
+                date: new Date(asset.date).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric', year: '2-digit' }),
+                Maliyet: cumulativeCost,
+                Değer: cumulativeValue,
+            };
+        }).filter(Boolean);
+    }, [allAssets, currencies]);
+
     // Derived Data for fallback lookups if needed (removed currencyMap since hook handles it)
 
     useEffect(() => {
@@ -159,13 +194,22 @@ const AssetsPage: React.FC = () => {
                     </div>
                     <p className="text-sm sm:text-base text-zinc-400 font-medium ml-16 sm:ml-0">Mevcut birikim durumunuz ve portföy özetiniz.</p>
                 </div>
-                <Button
-                    className="group w-full sm:w-auto shrink-0 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-300"
-                    onClick={() => navigate(PATHS.TRANSACTIONS)}
-                >
-                    <ArrowRightLeft className="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-500" />
-                    İşlem Yap
-                </Button>
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto shrink-0">
+                    <button 
+                        onClick={() => setIsBlurred(!isBlurred)} 
+                        className="p-3 bg-zinc-900 border border-white/5 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white shadow-lg"
+                        title={isBlurred ? "Değerleri Göster" : "Değerleri Gizle"}
+                    >
+                        {isBlurred ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                    <Button
+                        className="group w-full sm:w-auto shrink-0 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 transition-all duration-300"
+                        onClick={() => navigate(PATHS.TRANSACTIONS)}
+                    >
+                        <ArrowRightLeft className="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                        İşlem Yap
+                    </Button>
+                </div>
             </header>
 
             {/* Top Summary Cards */}
@@ -180,7 +224,7 @@ const AssetsPage: React.FC = () => {
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Harcama</p>
                                 <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
-                                    ₺{totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {isBlurred ? '₺***,**' : `₺${totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </p>
                             </div>
                         </div>
@@ -194,7 +238,7 @@ const AssetsPage: React.FC = () => {
                             <div className="min-w-0 flex-1">
                                 <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Değer</p>
                                 <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
-                                    ₺{totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {isBlurred ? '₺***,**' : `₺${totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </p>
                             </div>
                         </div>
@@ -216,13 +260,47 @@ const AssetsPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <p className={`text-2xl sm:text-3xl font-black truncate tracking-tight ${profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                    {profitLoss >= 0 ? '+' : ''}₺{Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    {isBlurred ? '₺***,**' : `${profitLoss >= 0 ? '+' : ''}₺${Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </p>
                                 <p className={`text-xs font-bold mt-1 ${profitLoss >= 0 ? 'text-green-500/60' : 'text-red-500/60'}`}>
-                                    {profitLossPercent >= 0 ? '+' : ''}{profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%
+                                    {isBlurred ? '%***,**' : `${profitLossPercent >= 0 ? '+' : ''}${profitLossPercent.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`}
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Chart Section */}
+            {!isLoading && chartData.length > 1 && (
+                <div className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[300px] sm:h-[400px] w-full shadow-2xl">
+                    <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
+                    </h2>
+                    <div className="w-full h-full pb-8">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorDeger" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorMaliyet" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <XAxis dataKey="date" stroke="#52525b" fontSize={10} tickMargin={10} axisLine={false} tickLine={false} />
+                                <YAxis stroke="#52525b" fontSize={10} tickFormatter={(val) => `₺${(val/1000).toFixed(0)}k`} axisLine={false} tickLine={false} />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '12px', color: '#fff' }}
+                                    itemStyle={{ fontSize: '13px', fontWeight: 'bold' }}
+                                    formatter={(value: any) => isBlurred ? '₺***,**' : `₺${Number(value).toLocaleString('tr-TR', { minimumFractionDigits: 0 })}`}
+                                />
+                                <Area type="monotone" dataKey="Değer" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorDeger)" />
+                                <Area type="monotone" dataKey="Maliyet" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorMaliyet)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             )}

@@ -9,6 +9,7 @@ const initialState: InitialStateProps = {
     user: null,
     encryptionKey: null,
     dateFormat: 'standard',
+    favoriteUnits: [],
 }
 
 const appSlice = createSlice({
@@ -32,6 +33,17 @@ const appSlice = createSlice({
         setDateFormat: (state, action: PayloadAction<'relative' | 'standard'>) => {
             state.dateFormat = action.payload;
         },
+        toggleFavoriteUnit: (state, action: PayloadAction<string>) => {
+            if (!state.favoriteUnits) {
+                state.favoriteUnits = [];
+            }
+            const index = state.favoriteUnits.indexOf(action.payload);
+            if (index >= 0) {
+                state.favoriteUnits.splice(index, 1);
+            } else {
+                state.favoriteUnits.push(action.payload);
+            }
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(REHYDRATE, (state, action: any) => {
@@ -44,6 +56,7 @@ const appSlice = createSlice({
                     state.user = persistedState.user;
                     state.encryptionKey = persistedState.encryptionKey || null;
                     state.dateFormat = persistedState.dateFormat || 'standard';
+                    state.favoriteUnits = persistedState.favoriteUnits || [];
                 }
             }
         });
@@ -55,6 +68,7 @@ export const {
     logout,
     setEncryptionKey,
     setDateFormat,
+    toggleFavoriteUnit,
 } = appSlice.actions;
 
 export default appSlice.reducer;

@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js';
 import { store } from '../store';
 
 const api = axios.create({
-    baseURL: 'https://altin.kiracilarim.com/api',
+    baseURL: 'https://altin.fatalsoft.com.tr/api',
     headers: {
         'Content-Type': 'application/json',
     },

@@ -110,12 +110,16 @@ const ProfilePage: React.FC = () => {
                     <section className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                             <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                                <UserIcon className="w-10 h-10 text-amber-500" />
+                                {user?.email ? (
+                                    <span className="text-3xl font-black text-amber-500 uppercase">{user.email.charAt(0)}</span>
+                                ) : (
+                                    <UserIcon className="w-10 h-10 text-amber-500" />
+                                )}
                             </div>
-                            <div className="text-center sm:text-left overflow-hidden w-full">
-                                <h3 className="text-2xl font-black truncate">{user?.name} {user?.surname}</h3>
+                            <div className="text-center sm:text-left overflow-hidden w-full flex flex-col justify-center h-20">
+                                <h3 className="text-xl md:text-2xl font-black truncate">{user?.email}</h3>
                                 <p className="text-zinc-500 flex items-center justify-center sm:justify-start gap-2 mt-1 truncate">
-                                    <Mail className="w-4 h-4" /> {user?.email}
+                                    <ShieldCheck className="w-4 h-4 text-green-500" /> Doğrulanmış Hesap
                                 </p>
                             </div>
                         </div>

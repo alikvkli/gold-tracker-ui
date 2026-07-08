@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Wallet,
@@ -10,8 +10,10 @@ import {
     Banknote,
     LayoutGrid,
     ChevronDown,
+    Star
 } from 'lucide-react';
-import { useAppSelector } from '../../hooks';
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { toggleFavoriteUnit } from '@/features/app';
 
 import { PATHS } from '../../routes/paths';
 import { formatDate } from '@/lib/date';
@@ -22,8 +24,12 @@ import {
 
 const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
-    const { dateFormat, user, encryptionKey } = useAppSelector(state => state.app);
-    const [activeTab, setActiveTab] = useState<'ALL' | 'GOLD' | 'CURRENCY'>('ALL');
+    const { dateFormat, user, encryptionKey, favoriteUnits } = useAppSelector(state => state.app);
+    const dispatch = useAppDispatch();
+    
+    type Tab = 'FAVORITES' | 'ALL' | 'GOLD' | 'CURRENCY';
+    const [activeTab, setActiveTab] = useState<Tab>('ALL');
+    const [hasSetDefaultTab, setHasSetDefaultTab] = useState(false);
 
     // RTK Query Hooks with Polling
     const skipQuery = user?.encrypted && !encryptionKey;
@@ -35,11 +41,39 @@ const DashboardPage: React.FC = () => {
     } = useGetCurrenciesQuery(undefined, { pollingInterval: 60000 });
 
     const {
+        data: assetsRes,
         isLoading: isAssetsLoading
     } = useGetAllAssetsQuery(undefined, {
         skip: skipQuery,
         pollingInterval: 60000
     });
+
+    useEffect(() => {
+        if (!hasSetDefaultTab && !isAssetsLoading) {
+            if (favoriteUnits && favoriteUnits.length > 0) {
+                setActiveTab('FAVORITES');
+            } else if (assetsRes && assetsRes.data) {
+                let goldCount = 0;
+                let currencyCount = 0;
+                assetsRes.data.forEach((asset: any) => {
+                    const isGold = asset.currency?.type === 'Altın' || asset.currency?.type === 'Gold';
+                    if (isGold) goldCount++;
+                    else currencyCount++;
+                });
+
+                if (goldCount > currencyCount || (goldCount > 0 && currencyCount === 0)) {
+                    setActiveTab('GOLD');
+                } else if (currencyCount > goldCount || (currencyCount > 0 && goldCount === 0)) {
+                    setActiveTab('CURRENCY');
+                } else {
+                    setActiveTab('ALL');
+                }
+            } else {
+                setActiveTab('ALL');
+            }
+            setHasSetDefaultTab(true);
+        }
+    }, [isAssetsLoading, assetsRes, favoriteUnits, hasSetDefaultTab]);
 
     const isLoading = isCurrenciesLoading || (isAssetsLoading && !skipQuery);
 
@@ -50,6 +84,7 @@ const DashboardPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
 
     const categories = [
+        { id: 'FAVORITES', label: 'Favoriler', icon: Star },
         { id: 'ALL', label: 'Tümü', icon: LayoutGrid },
         { id: 'GOLD', label: 'Altın', icon: Coins },
         { id: 'CURRENCY', label: 'Döviz', icon: Banknote },
@@ -75,6 +110,7 @@ const DashboardPage: React.FC = () => {
                 return false;
             }
 
+            if (activeTab === 'FAVORITES') return favoriteUnits?.includes(cur.name);
             if (activeTab === 'ALL') return isGold || isCurrency;
             if (activeTab === 'GOLD') return isGold;
             if (activeTab === 'CURRENCY') return isCurrency;
@@ -84,6 +120,12 @@ const DashboardPage: React.FC = () => {
 
         // Sorting Logic
         results.sort((a, b) => {
+            const isFavA = favoriteUnits?.includes(a.name);
+            const isFavB = favoriteUnits?.includes(b.name);
+            
+            if (isFavA && !isFavB) return -1;
+            if (!isFavA && isFavB) return 1;
+
             const isGoldA = a.type === 'Altın' || a.type === 'Gold';
             const isGoldB = b.type === 'Altın' || b.type === 'Gold';
 
@@ -209,6 +251,7 @@ const DashboardPage: React.FC = () => {
                                 <thead>
                                     <tr className="border-b border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
                                         <th className="px-3 py-3 sm:px-6 sm:py-5">Varlık</th>
+                                        <th className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12"></th>
                                         <th className="hidden sm:table-cell px-6 py-5 text-center">Türü</th>
                                         <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Alış</th>
                                         <th className="px-3 py-3 sm:px-6 sm:py-5 text-right">Satış</th>
@@ -234,6 +277,14 @@ const DashboardPage: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     </div>
+                                                </td>
+                                                <td className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12">
+                                                    <button 
+                                                        onClick={() => dispatch(toggleFavoriteUnit(cur.name))}
+                                                        className={`p-2 rounded-full transition-colors ${favoriteUnits?.includes(cur.name) ? 'text-amber-500 bg-amber-500/10' : 'text-zinc-600 hover:text-amber-500 hover:bg-zinc-800'}`}
+                                                    >
+                                                        <Star className="w-5 h-5" fill={favoriteUnits?.includes(cur.name) ? "currentColor" : "none"} />
+                                                    </button>
                                                 </td>
                                                 <td className="hidden sm:table-cell px-6 py-5 text-center">
                                                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isGold
@@ -313,7 +364,7 @@ const DashboardPage: React.FC = () => {
                                         Tüm işlemlerinizi detaylı olarak incelemek ister misiniz?
                                     </p>
                                     <button
-                                        onClick={() => navigate(PATHS.ASSETS)}
+                                        onClick={() => navigate(PATHS.TRANSACTIONS)}
                                         className="w-full mt-4 sm:mt-6 md:mt-8 text-[9px] sm:text-[10px] font-black px-4 sm:px-6 md:px-8 py-3 sm:py-4 md:py-5 bg-white text-zinc-900 rounded-lg sm:rounded-xl md:rounded-2xl hover:bg-amber-500 hover:text-zinc-900 transition-all uppercase tracking-[0.2em] shadow-xl"
                                     >
                                         Dökümü Aç
