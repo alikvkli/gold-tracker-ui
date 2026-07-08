@@ -12,13 +12,15 @@ import {
     Zap,
     X,
     ChevronDown,
-    ChevronUp
+    ChevronUp,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 import { useAppDispatch, useAppSelector } from '@/hooks';
-import { setEncryptionKey, setLogin, setDateFormat } from '@/features/app';
+import { setEncryptionKey, setLogin, setDateFormat, setTheme } from '@/features/app';
 import { addToast } from '@/features/ui/uiSlice';
 import api from '@/lib/api';
 import Button from '@/components/Button';
@@ -26,7 +28,7 @@ import Input from '@/components/Input';
 
 const ProfilePage: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { user, encryptionKey, token, dateFormat } = useAppSelector(state => state.app);
+    const { user, encryptionKey, token, dateFormat, theme } = useAppSelector(state => state.app);
 
     const [showKey, setShowKey] = useState(false);
     const [isEncryptionModalOpen, setIsEncryptionModalOpen] = useState(false);
@@ -100,13 +102,13 @@ const ProfilePage: React.FC = () => {
         <div className="space-y-10">
             <header>
                 <h1 className="text-4xl lg:text-5xl font-black mb-2 tracking-tight">Profil ve Güvenlik</h1>
-                <p className="text-zinc-500 font-medium">Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin.</p>
+                <p className="text-zinc-500 dark:text-zinc-400 font-medium">Hesap bilgilerinizi ve güvenlik ayarlarınızı yönetin.</p>
             </header>
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
                 {/* User Info & Password */}
                 <div className="space-y-8">
-                    <section className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+                    <section className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-8">
                             <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                                 {user?.email ? (
@@ -117,13 +119,13 @@ const ProfilePage: React.FC = () => {
                             </div>
                             <div className="text-center sm:text-left overflow-hidden w-full flex flex-col justify-center h-20">
                                 <h3 className="text-xl md:text-2xl font-black truncate">{user?.email}</h3>
-                                <p className="text-zinc-500 flex items-center justify-center sm:justify-start gap-2 mt-1 truncate">
+                                <p className="text-zinc-500 dark:text-zinc-400 flex items-center justify-center sm:justify-start gap-2 mt-1 truncate">
                                     <ShieldCheck className="w-4 h-4 text-green-500" /> Doğrulanmış Hesap
                                 </p>
                             </div>
                         </div>
 
-                        <hr className="border-white/5 mb-8" />
+                        <hr className="border-zinc-200 dark:border-white/5 mb-8" />
 
                         <form onSubmit={passwordFormik.handleSubmit} className="space-y-6">
                             <button
@@ -135,9 +137,9 @@ const ProfilePage: React.FC = () => {
                                     <Lock className="w-5 h-5 text-amber-500" /> Şifre Değiştir
                                 </h4>
                                 {isPasswordChangeOpen ? (
-                                    <ChevronUp className="w-5 h-5 text-zinc-500 group-hover:text-amber-500 transition-colors" />
+                                    <ChevronUp className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors" />
                                 ) : (
-                                    <ChevronDown className="w-5 h-5 text-zinc-500 group-hover:text-amber-500 transition-colors" />
+                                    <ChevronDown className="w-5 h-5 text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors" />
                                 )}
                             </button>
 
@@ -178,20 +180,20 @@ const ProfilePage: React.FC = () => {
                     </section>
 
                     {/* Appearance Settings */}
-                    <section className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
+                    <section className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl">
                         <h4 className="text-lg font-bold flex items-center gap-2 mb-6">
                             <Zap className="w-5 h-5 text-amber-500" /> Görünüm Ayarları
                         </h4>
 
                         <div className="space-y-6">
                             <div>
-                                <label className="text-sm font-bold text-zinc-500 px-1 uppercase tracking-widest block mb-4">Tarih Gösterimi</label>
-                                <div className="grid grid-cols-2 gap-4 p-1 bg-zinc-950 border border-white/5 rounded-2xl">
+                                <label className="text-sm font-bold text-zinc-500 dark:text-zinc-400 px-1 uppercase tracking-widest block mb-4">Tarih Gösterimi</label>
+                                <div className="grid grid-cols-2 gap-4 p-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/5 rounded-2xl">
                                     <button
                                         onClick={() => dispatch(setDateFormat('relative'))}
                                         className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${dateFormat === 'relative'
                                             ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                            : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5'
                                             }`}
                                     >
                                         <Zap className="w-4 h-4" /> Dinamik
@@ -200,7 +202,7 @@ const ProfilePage: React.FC = () => {
                                         onClick={() => dispatch(setDateFormat('standard'))}
                                         className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${dateFormat === 'standard'
                                             ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                            : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5'
                                             }`}
                                     >
                                         <Calendar className="w-4 h-4" /> Standart
@@ -210,24 +212,48 @@ const ProfilePage: React.FC = () => {
                                     * Örn: "{dateFormat === 'relative' ? '5 dakika önce' : '24.12.2025 07:35'}"
                                 </p>
                             </div>
+
+                            <div className="mt-6">
+                                <label className="text-sm font-bold text-zinc-500 dark:text-zinc-400 px-1 uppercase tracking-widest block mb-4">Tema</label>
+                                <div className="grid grid-cols-2 gap-4 p-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/5 rounded-2xl">
+                                    <button
+                                        onClick={() => dispatch(setTheme('light'))}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${theme === 'light'
+                                            ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <Sun className="w-4 h-4" /> Aydınlık
+                                    </button>
+                                    <button
+                                        onClick={() => dispatch(setTheme('dark'))}
+                                        className={`flex items-center justify-center gap-2 py-3 rounded-xl transition-all font-bold text-sm ${theme === 'dark'
+                                            ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
+                                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <Moon className="w-4 h-4" /> Karanlık
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </section>
                 </div>
 
                 {/* Security & Encryption */}
                 <div className="space-y-8">
-                    <section className="bg-zinc-900/50 border border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl relative overflow-hidden">
+                    <section className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 backdrop-blur-xl relative overflow-hidden">
                         <div className="flex items-center justify-between gap-4 mb-8">
                             <h4 className="text-lg font-bold flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-amber-500" /> Varlık Şifreleme
                             </h4>
-                            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shrink-0 ${user?.encrypted ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-zinc-500/10 text-zinc-500 border-white/5'
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shrink-0 ${user?.encrypted ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-white/5'
                                 }`}>
                                 {user?.encrypted ? 'Aktif' : 'Pasif'}
                             </div>
                         </div>
 
-                        <p className="text-sm text-zinc-500 leading-relaxed mb-8">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed mb-8">
                             Şifreleme aktif edildiğinde, varlıklarınız veritabanında sizin kimliğinizle doğrudan ilişkilendirilmez. Sadece size özel bir anahtar ile erişebilirsiniz.
                         </p>
 
@@ -248,8 +274,8 @@ const ProfilePage: React.FC = () => {
                         </Button>
 
                         {user?.encrypted && (
-                            <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-6">
-                                <h5 className="font-bold text-sm tracking-widest uppercase text-zinc-400 flex items-center gap-2">
+                            <div className="p-6 bg-zinc-100 dark:bg-white/5 rounded-3xl border border-zinc-200 dark:border-white/5 space-y-6">
+                                <h5 className="font-bold text-sm tracking-widest uppercase text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
                                     <KeyRound className="w-4 h-4" /> Anahtarınız
                                 </h5>
 
@@ -260,12 +286,12 @@ const ProfilePage: React.FC = () => {
                                             name="encryptionKey"
                                             defaultValue={encryptionKey || ''}
                                             placeholder="Anahtarınızı girin..."
-                                            className="w-full bg-zinc-950 border border-white/10 rounded-xl py-3 px-4 pr-12 text-white outline-none focus:border-amber-500/50 transition-all font-mono"
+                                            className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-white/10 rounded-xl py-3 px-4 pr-12 text-zinc-900 dark:text-white outline-none focus:border-amber-500/50 transition-all font-mono"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowKey(!showKey)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white"
                                         >
                                             {showKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
@@ -282,13 +308,13 @@ const ProfilePage: React.FC = () => {
 
             {/* Encryption Toggle Modal / Bottom Tray */}
             {isEncryptionModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/80 backdrop-blur-sm">
-                    <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] p-10 shadow-2xl relative">
+                <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center p-0 lg:p-6 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm">
+                    <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-t lg:border border-zinc-300 dark:border-white/10 rounded-t-[2.5rem] lg:rounded-[2.5rem] p-10 shadow-2xl relative">
                         {/* Drag Handle for Mobile */}
                         <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6 lg:hidden" />
 
-                        <div className="p-2 absolute right-6 top-6 lg:top-8 bg-white/5 rounded-xl cursor-pointer hover:bg-white/10 transition-all" onClick={() => setIsEncryptionModalOpen(false)}>
-                            <X className="w-5 h-5 text-zinc-500" />
+                        <div className="p-2 absolute right-6 top-6 lg:top-8 bg-zinc-100 dark:bg-white/5 rounded-xl cursor-pointer hover:bg-white/10 transition-all" onClick={() => setIsEncryptionModalOpen(false)}>
+                            <X className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                         </div>
 
                         <div className="text-center mb-8 pt-4 lg:pt-0">
@@ -296,7 +322,7 @@ const ProfilePage: React.FC = () => {
                                 <Shield className="w-8 h-8 text-amber-500" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight">Güvenlik Onayı</h3>
-                            <p className="text-zinc-500 mt-2 text-sm px-4">
+                            <p className="text-zinc-500 dark:text-zinc-400 mt-2 text-sm px-4">
                                 İşlemi onaylamak için lütfen **Şifreleme Anahtarınızı** giriniz.
                             </p>
                         </div>

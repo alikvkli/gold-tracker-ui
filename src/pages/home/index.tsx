@@ -40,7 +40,7 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans selection:bg-amber-500/30 selection:text-amber-200 overflow-x-hidden">
       {/* Background Ornaments */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full"></div>
@@ -48,7 +48,7 @@ export default function HomePage() {
       </div>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -63,7 +63,7 @@ export default function HomePage() {
           <div className="flex items-center gap-6">
             <button
               onClick={() => navigate(PATHS.LOGIN)}
-              className="text-zinc-400 hover:text-white transition-colors font-medium text-sm hidden sm:block"
+              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-white transition-colors font-medium text-sm hidden sm:block"
             >
               Giriş Yap
             </button>
@@ -91,7 +91,7 @@ export default function HomePage() {
           </span>
         </h1>
 
-        <p className="text-lg sm:text-xl text-zinc-400 mb-12 max-w-2xl leading-relaxed">
+        <p className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 mb-12 max-w-2xl leading-relaxed">
           Portföyünüzü modern araçlarla takip edin, uçtan uca şifreleme ile anonim kalın ve yatırım kararlarınızı verilerle güçlendirin.
         </p>
 
@@ -111,7 +111,7 @@ export default function HomePage() {
 
           <button
             onClick={() => navigate(PATHS.LOGIN)}
-            className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/5 border border-white/10 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all cursor-pointer backdrop-blur-sm"
+            className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 rounded-2xl font-bold text-lg hover:bg-white/10 transition-all cursor-pointer backdrop-blur-sm"
           >
             Zaten Üyeyim
             <ChevronRight className="w-5 h-5 text-amber-500" />
@@ -121,26 +121,26 @@ export default function HomePage() {
         {/* Dashboard Preview Mock */}
         <div className="mt-24 relative group w-full max-w-5xl">
           <div className="absolute inset-0 bg-amber-500/20 blur-[100px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="bg-zinc-900 border border-white/10 rounded-3xl p-4 sm:p-8 shadow-2xl overflow-hidden backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-3xl p-4 sm:p-8 shadow-2xl overflow-hidden backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-200 dark:border-white/5">
               <div className="flex items-center gap-6">
                 <div className="h-2 w-2 rounded-full bg-red-400"></div>
                 <div className="h-2 w-2 rounded-full bg-amber-400"></div>
                 <div className="h-2 w-2 rounded-full bg-green-400"></div>
               </div>
-              <div className="px-4 py-1.5 bg-white/5 rounded-lg text-xs font-mono text-zinc-500 uppercase tracking-widest">
+              <div className="px-4 py-1.5 bg-zinc-100 dark:bg-white/5 rounded-lg text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
                 goldtracker.sh
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="h-40 bg-white/5 rounded-2xl border border-white/5 flex flex-col justify-center p-6 text-left">
-                <p className="text-zinc-500 text-xs font-bold uppercase mb-2">Toplam Varlık</p>
+              <div className="h-40 bg-zinc-100 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/5 flex flex-col justify-center p-6 text-left">
+                <p className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase mb-2">Toplam Varlık</p>
                 <h3 className="text-3xl font-bold text-amber-400">₺1,240,500.00</h3>
                 <p className="text-green-400 text-xs mt-2 flex items-center gap-1 font-bold">
                   <TrendingUp className="w-3 h-3" /> +12.4%
                 </p>
               </div>
-              <div className="h-40 bg-white/5 rounded-2xl border border-white/5 md:col-span-2 flex items-center justify-center relative overflow-hidden">
+              <div className="h-40 bg-zinc-100 dark:bg-white/5 rounded-2xl border border-zinc-200 dark:border-white/5 md:col-span-2 flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-full h-[60%] bg-gradient-to-t from-amber-500/20 to-transparent"></div>
                 </div>
@@ -160,7 +160,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-24">
             <h2 className="text-4xl sm:text-5xl font-bold mb-6 tracking-tight">Kusursuz Yatırım Deneyimi</h2>
-            <p className="text-zinc-400 max-w-2xl mx-auto text-lg">
+            <p className="text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto text-lg">
               Altın birikimlerinizi takip ederken ihtiyaç duyacağınız tüm araçlar tek bir platformda.
             </p>
           </div>
@@ -169,16 +169,16 @@ export default function HomePage() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-zinc-900/50 p-10 rounded-[2.5rem] border border-white/5 hover:border-amber-500/30 transition-all duration-500 group relative overflow-hidden"
+                className="bg-white/50 dark:bg-zinc-900/50 p-10 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 hover:border-amber-500/30 transition-all duration-500 group relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                   {feature.icon}
                 </div>
-                <div className="mb-8 p-4 bg-white/5 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500 border border-white/5">
+                <div className="mb-8 p-4 bg-zinc-100 dark:bg-white/5 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500 border border-zinc-200 dark:border-white/5">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-zinc-500 leading-relaxed text-sm">
+                <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed text-sm">
                   {feature.description}
                 </p>
               </div>

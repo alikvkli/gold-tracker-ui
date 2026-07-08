@@ -291,7 +291,7 @@ const TransactionsPage: React.FC = () => {
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
             {/* Header */}
-            <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
+            <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-zinc-200 dark:border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-2xl items-center justify-center border border-blue-500/20 shadow-lg shadow-blue-500/5">
@@ -303,26 +303,26 @@ const TransactionsPage: React.FC = () => {
                             </h1>
                         </div>
                     </div>
-                    <p className="text-sm sm:text-base text-zinc-400 font-medium ml-16 sm:ml-0">Yeni işlem ekleyin veya geçmiş işlemlerinizi inceleyin.</p>
+                    <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-medium ml-16 sm:ml-0">Yeni işlem ekleyin veya geçmiş işlemlerinizi inceleyin.</p>
                 </div>
             </header>
 
             {/* Transaction Form Area */}
-            <div className="bg-zinc-900/50 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 backdrop-blur-xl">
-                <div className="flex p-1 bg-zinc-900 rounded-xl mb-6 sm:mb-8 w-full sm:w-fit">
+            <div className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 backdrop-blur-xl">
+                <div className="flex p-1 bg-white dark:bg-zinc-900 rounded-xl mb-6 sm:mb-8 w-full sm:w-fit">
                     <button
                         onClick={() => setActiveTab('buy')}
                         className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'buy'
-                            ? 'bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg shadow-green-500/20'
-                            : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+                            ? 'bg-gradient-to-br from-green-500 to-green-600 text-zinc-900 dark:text-white shadow-lg shadow-green-500/20'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5'}`}
                     >
                         <TrendingUp className="w-4 h-4" /> Alım Yap
                     </button>
                     <button
                         onClick={() => setActiveTab('sell')}
                         className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'sell'
-                            ? 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-500/20'
-                            : 'text-zinc-500 hover:text-white hover:bg-white/5'}`}
+                            ? 'bg-gradient-to-br from-red-500 to-red-600 text-zinc-900 dark:text-white shadow-lg shadow-red-500/20'
+                            : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5'}`}
                     >
                         <TrendingDown className="w-4 h-4" /> Satış Yap
                     </button>
@@ -332,18 +332,18 @@ const TransactionsPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-2">
                             {/* Asset Type Selector */}
-                            <div className="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-lg sm:rounded-xl">
+                            <div className="grid grid-cols-2 gap-2 p-1 bg-zinc-100 dark:bg-white/5 rounded-lg sm:rounded-xl">
                                 <button
                                     type="button"
                                     onClick={() => setSelectedAssetType('Altın')}
-                                    className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Altın' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                    className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Altın' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'}`}
                                 >
                                     Altın
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setSelectedAssetType('Döviz')}
-                                    className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Döviz' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 hover:text-zinc-300'}`}
+                                    className={`py-2 rounded-lg text-xs font-bold transition-all ${selectedAssetType === 'Döviz' ? 'bg-amber-500/20 text-amber-500 border border-amber-500/20' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'}`}
                                 >
                                     Döviz
                                 </button>
@@ -360,9 +360,9 @@ const TransactionsPage: React.FC = () => {
                                             setIsExternalSale(e.target.checked);
                                             formik.setFieldValue('currency_id', '');
                                         }}
-                                        className="w-4 h-4 rounded border-gray-600 bg-zinc-800 text-amber-500 focus:ring-amber-500/50"
+                                        className="w-4 h-4 rounded border-gray-600 bg-zinc-100 dark:bg-zinc-800 text-amber-500 focus:ring-amber-500/50"
                                     />
-                                    <label htmlFor="externalSale" className="text-xs font-medium text-zinc-400 select-none cursor-pointer hover:text-zinc-300">
+                                    <label htmlFor="externalSale" className="text-xs font-medium text-zinc-600 dark:text-zinc-400 select-none cursor-pointer hover:text-zinc-700 dark:text-zinc-300">
                                         Portföyde olmayan varlık (Harici Satış)
                                     </label>
                                 </div>
@@ -374,7 +374,7 @@ const TransactionsPage: React.FC = () => {
                                     name="currency_id"
                                     onChange={formik.handleChange}
                                     value={formik.values.currency_id}
-                                    className="w-full bg-zinc-900 border border-white/10 rounded-lg sm:rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-white outline-none focus:border-blue-500/50 appearance-none transition-all"
+                                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-lg sm:rounded-xl py-2.5 sm:py-3 px-3 sm:px-4 text-sm sm:text-base text-zinc-900 dark:text-white outline-none focus:border-blue-500/50 appearance-none transition-all"
                                 >
                                     <option value="" disabled>Seçiniz...</option>
                                     {currencies
@@ -405,7 +405,7 @@ const TransactionsPage: React.FC = () => {
                                             );
                                         })}
                                 </select>
-                                <Coins className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-500 pointer-events-none" />
+                                <Coins className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-500 dark:text-zinc-400 pointer-events-none" />
                             </div>
                         </div>
 
@@ -451,10 +451,10 @@ const TransactionsPage: React.FC = () => {
                             error={formik.touched.price && formik.errors.price ? formik.errors.price : undefined}
                         />
                     </div>
-                    <div className="bg-zinc-800/50 border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-2">
+                    <div className="bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-center gap-2">
                         <div className="flex items-baseline gap-2">
-                            <span className="text-zinc-500 text-lg sm:text-xl font-medium">Toplam: ₺</span>
-                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter text-white">
+                            <span className="text-zinc-500 dark:text-zinc-400 text-lg sm:text-xl font-medium">Toplam: ₺</span>
+                            <span className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter text-zinc-900 dark:text-white">
                                 {(Number(formik.values.amount || 0) * Number(formik.values.price || 0)).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
                         </div>
@@ -491,10 +491,10 @@ const TransactionsPage: React.FC = () => {
             </div>
 
             {/* History Table */}
-            <div className="relative bg-zinc-900/50 border border-white/5 rounded-2xl sm:rounded-[2rem] overflow-hidden backdrop-blur-xl">
-                <div className="p-6 border-b border-white/5">
-                    <h3 className="font-bold text-lg text-white flex items-center gap-2">
-                        <History className="w-5 h-5 text-zinc-400" />
+            <div className="relative bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] overflow-hidden backdrop-blur-xl">
+                <div className="p-6 border-b border-zinc-200 dark:border-white/5">
+                    <h3 className="font-bold text-lg text-zinc-900 dark:text-white flex items-center gap-2">
+                        <History className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                         Son İşlemler
                     </h3>
                 </div>
@@ -502,13 +502,13 @@ const TransactionsPage: React.FC = () => {
                 {/* Mobile Card View (Visible < lg) */}
                 <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
                     {isLoading ? (
-                        <div className="col-span-full py-10 text-center text-zinc-500">Yükleniyor...</div>
+                        <div className="col-span-full py-10 text-center text-zinc-500 dark:text-zinc-400">Yükleniyor...</div>
                     ) : assets.length === 0 ? (
-                        <div className="col-span-full py-10 text-center text-zinc-500">İşlem bulunamadı.</div>
+                        <div className="col-span-full py-10 text-center text-zinc-500 dark:text-zinc-400">İşlem bulunamadı.</div>
                     ) : (
                         assets.map((asset) => (
-                            <div key={asset.id} className="bg-zinc-800/40 border border-white/5 rounded-xl p-4 hover:border-white/10 transition-all">
-                                <div className="flex items-start justify-between mb-4 pb-4 border-b border-white/5">
+                            <div key={asset.id} className="bg-zinc-800/40 border border-zinc-200 dark:border-white/5 rounded-xl p-4 hover:border-zinc-300 dark:border-white/10 transition-all">
+                                <div className="flex items-start justify-between mb-4 pb-4 border-b border-zinc-200 dark:border-white/5">
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-lg ${asset.type === 'buy' ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}>
                                             {asset.type === 'buy' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
@@ -517,13 +517,13 @@ const TransactionsPage: React.FC = () => {
                                             <p className={`font-bold text-sm ${asset.type === 'buy' ? 'text-green-400' : 'text-red-400'}`}>
                                                 {asset.type === 'buy' ? 'Alım İşlemi' : 'Satış İşlemi'}
                                             </p>
-                                            <p className="text-sm font-bold text-white mt-0.5">
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">
                                                 {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold') ? asset.currency.name : asset.currency.code}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-zinc-500 mb-1">{formatDate(asset.date, dateFormat)}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">{formatDate(asset.date, dateFormat)}</p>
                                         <button
                                             onClick={() => {
                                                 if (user?.encrypted) {
@@ -534,7 +534,7 @@ const TransactionsPage: React.FC = () => {
                                                     setIsDeleteModalOpen(true);
                                                 }
                                             }}
-                                            className="p-1.5 text-zinc-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
+                                            className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-red-400 bg-zinc-100 dark:bg-white/5 hover:bg-red-500/10 rounded-lg transition-all"
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -544,19 +544,19 @@ const TransactionsPage: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
                                     <button className="col-span-2 text-left" onClick={() => openEditModal(asset)}>
                                         <div>
-                                            <p className="text-xs text-zinc-500 mb-0.5">Miktar</p>
-                                            <p className="text-white font-medium">
-                                                {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Miktar</p>
+                                            <p className="text-zinc-900 dark:text-white font-medium">
+                                                {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500 dark:text-zinc-400">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
                                             </p>
                                         </div>
                                     </button>
                                     <div className="text-right">
-                                        <p className="text-xs text-zinc-500 mb-0.5">Birim Fiyat</p>
-                                        <p className="text-zinc-300 font-medium">₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Birim Fiyat</p>
+                                        <p className="text-zinc-700 dark:text-zinc-300 font-medium">₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
                                     </div>
-                                    <div className="col-span-2 pt-3 mt-1 border-t border-white/5 flex items-center justify-between">
-                                        <p className="text-xs text-zinc-500">Toplam Tutar</p>
-                                        <p className="text-base font-bold text-white">
+                                    <div className="col-span-2 pt-3 mt-1 border-t border-zinc-200 dark:border-white/5 flex items-center justify-between">
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400">Toplam Tutar</p>
+                                        <p className="text-base font-bold text-zinc-900 dark:text-white">
                                             ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                         </p>
                                     </div>
@@ -570,25 +570,25 @@ const TransactionsPage: React.FC = () => {
                 <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-white/5 bg-white/5">
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400">Tür / Tarih</th>
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400">Varlık</th>
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Miktar</th>
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Fiyat</th>
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">Tutar</th>
-                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-400 text-right">İşlem</th>
+                            <tr className="border-b border-zinc-200 dark:border-white/5 bg-zinc-100 dark:bg-white/5">
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400">Tür / Tarih</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400">Varlık</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 text-right">Miktar</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 text-right">Fiyat</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 text-right">Tutar</th>
+                                <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-zinc-600 dark:text-zinc-400 text-right">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                <tr><td colSpan={6} className="py-10 text-center text-zinc-500">Yükleniyor...</td></tr>
+                                <tr><td colSpan={6} className="py-10 text-center text-zinc-500 dark:text-zinc-400">Yükleniyor...</td></tr>
                             ) : assets.length === 0 ? (
-                                <tr><td colSpan={6} className="py-10 text-center text-zinc-500">İşlem bulunamadı.</td></tr>
+                                <tr><td colSpan={6} className="py-10 text-center text-zinc-500 dark:text-zinc-400">İşlem bulunamadı.</td></tr>
                             ) : (
                                 assets.map((asset) => (
                                     <tr
                                         key={asset.id}
-                                        className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                                        className="border-b border-zinc-200 dark:border-white/5 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
                                         onClick={() => openEditModal(asset)}
                                     >
                                         <td className="px-6 py-4">
@@ -597,21 +597,21 @@ const TransactionsPage: React.FC = () => {
                                                     {asset.type === 'buy' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-sm text-white">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
-                                                    <p className="text-xs text-zinc-400">{formatDate(asset.date, dateFormat)}</p>
+                                                    <p className="font-bold text-sm text-zinc-900 dark:text-white">{asset.type === 'buy' ? 'Alım' : 'Satım'}</p>
+                                                    <p className="text-xs text-zinc-600 dark:text-zinc-400">{formatDate(asset.date, dateFormat)}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-medium text-white">
+                                        <td className="px-6 py-4 text-sm font-medium text-zinc-900 dark:text-white">
                                             {(asset.currency.type === 'Altın' || asset.currency.type === 'Gold') ? asset.currency.name : asset.currency.code}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-right text-zinc-300">
-                                            {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
+                                        <td className="px-6 py-4 text-sm text-right text-zinc-700 dark:text-zinc-300">
+                                            {parseFloat(asset.amount).toLocaleString('tr-TR')} <span className="text-xs text-zinc-500 dark:text-zinc-400">{getAssetUnit(asset.currency.code, asset.currency.name)}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-right text-zinc-300">
+                                        <td className="px-6 py-4 text-sm text-right text-zinc-700 dark:text-zinc-300">
                                             ₺{parseFloat(asset.price).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-right font-bold text-white">
+                                        <td className="px-6 py-4 text-sm text-right font-bold text-zinc-900 dark:text-white">
                                             ₺{(parseFloat(asset.amount) * parseFloat(asset.price)).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -626,7 +626,7 @@ const TransactionsPage: React.FC = () => {
                                                         setIsDeleteModalOpen(true);
                                                     }
                                                 }}
-                                                className="p-2 text-zinc-500 hover:text-red-400 transition-colors"
+                                                className="p-2 text-zinc-500 dark:text-zinc-400 hover:text-red-400 transition-colors"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -638,9 +638,9 @@ const TransactionsPage: React.FC = () => {
                     </table>
                 </div>
                 {pagination && pagination.last_page > 1 && (
-                    <div className="px-6 py-4 border-t border-white/5 flex items-center justify-between">
+                    <div className="px-6 py-4 border-t border-zinc-200 dark:border-white/5 flex items-center justify-between">
                         <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="disabled:opacity-50"><ChevronLeft /></button>
-                        <span className="text-sm text-zinc-400">Sayfa {page} / {pagination.last_page}</span>
+                        <span className="text-sm text-zinc-600 dark:text-zinc-400">Sayfa {page} / {pagination.last_page}</span>
                         <button disabled={page === pagination.last_page} onClick={() => setPage(p => p + 1)} className="disabled:opacity-50"><ChevronRight /></button>
                     </div>
                 )}
@@ -649,14 +649,14 @@ const TransactionsPage: React.FC = () => {
             {/* Delete Modal */}
             {isDeleteModalOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-sm text-center">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-2xl p-6 w-full max-w-sm text-center">
                         <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-red-500">
                             <Trash2 size={32} />
                         </div>
                         <h3 className="text-xl font-bold mb-2">İşlemi Sil</h3>
-                        <p className="text-zinc-500 mb-6">Bu işlem geri alınamaz. Devam etmek istiyor musunuz?</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 mb-6">Bu işlem geri alınamaz. Devam etmek istiyor musunuz?</p>
                         <div className="flex gap-3">
-                            <Button className="flex-1 bg-zinc-800 hover:bg-zinc-700" onClick={() => setIsDeleteModalOpen(false)}>Vazgeç</Button>
+                            <Button className="flex-1 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-700" onClick={() => setIsDeleteModalOpen(false)}>Vazgeç</Button>
                             <Button className="flex-1 bg-red-600 hover:bg-red-500" onClick={confirmDelete} isLoading={isDeleting}>Sil</Button>
                         </div>
                     </div>
@@ -666,14 +666,14 @@ const TransactionsPage: React.FC = () => {
             {/* Security Modal - NOW JUST IN TIME */}
             {isTransactionSecurityModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
-                    <form onSubmit={handleTransactionSecurityVerify} className="bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4 border border-white/10">
+                    <form onSubmit={handleTransactionSecurityVerify} className="bg-white dark:bg-zinc-900 p-8 rounded-2xl w-full max-w-md space-y-4 border border-zinc-300 dark:border-white/10">
                         <div className="text-center mb-4">
                             <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-500">
                                 <Coins aria-hidden="true" className="w-6 h-6" />
                                 {/* Using a standard icon just in case coins isn't imported or valid, but 'Coins' is imported on top */}
                             </div>
                             <h2 className="text-2xl font-bold">Güvenlik Kontrolü</h2>
-                            <p className="text-zinc-400 text-sm mt-1">İşlemi tamamlamak için şifreleme anahtarınızı giriniz.</p>
+                            <p className="text-zinc-600 dark:text-zinc-400 text-sm mt-1">İşlemi tamamlamak için şifreleme anahtarınızı giriniz.</p>
                         </div>
 
                         <Input

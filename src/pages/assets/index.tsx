@@ -207,7 +207,7 @@ const AssetsPage: React.FC = () => {
 
     return (
         <div className="space-y-6 sm:space-y-8 lg:space-y-10">
-            <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-white/5">
+            <header className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 pb-6 border-b border-zinc-200 dark:border-white/5">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-amber-400/20 to-amber-600/20 rounded-2xl items-center justify-center border border-amber-500/20 shadow-lg shadow-amber-500/5">
@@ -219,12 +219,12 @@ const AssetsPage: React.FC = () => {
                             </h1>
                         </div>
                     </div>
-                    <p className="text-sm sm:text-base text-zinc-400 font-medium ml-16 sm:ml-0">Mevcut birikim durumunuz ve portföy özetiniz.</p>
+                    <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 font-medium ml-16 sm:ml-0">Mevcut birikim durumunuz ve portföy özetiniz.</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto shrink-0">
                     <button 
                         onClick={() => setIsBlurred(!isBlurred)} 
-                        className="p-3 bg-zinc-900 border border-white/5 rounded-xl hover:bg-white/5 transition-colors text-zinc-400 hover:text-white shadow-lg"
+                        className="p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-white shadow-lg"
                         title={isBlurred ? "Değerleri Göster" : "Değerleri Gizle"}
                     >
                         {isBlurred ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -242,29 +242,29 @@ const AssetsPage: React.FC = () => {
             {/* Top Summary Cards */}
             {!isLoading && portfolioItems.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
+                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-amber-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/5 overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-amber-500/0 group-hover:from-amber-500/5 group-hover:to-amber-500/0 transition-all duration-300"></div>
                         <div className="relative flex items-center gap-4">
                             <div className="hidden sm:flex w-14 h-14 bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-2xl items-center justify-center text-amber-500 shrink-0 border border-amber-500/20 shadow-lg shadow-amber-500/5 group-hover:scale-110 transition-transform duration-300">
                                 <Wallet className="w-7 h-7" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Harcama</p>
-                                <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
+                                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1">Toplam Harcama</p>
+                                <p className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white truncate tracking-tight">
                                     {isBlurred ? '₺***,**' : `₺${totalCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </p>
                             </div>
                         </div>
                     </div>
-                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 overflow-hidden">
+                    <div className="group relative bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] p-6 backdrop-blur-xl hover:border-blue-500/20 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/5 overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:to-blue-500/0 transition-all duration-300"></div>
                         <div className="relative flex items-center gap-4">
                             <div className="hidden sm:flex w-14 h-14 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl items-center justify-center text-blue-500 shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5 group-hover:scale-110 transition-transform duration-300">
                                 <Banknote className="w-7 h-7" />
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest mb-1">Toplam Değer</p>
-                                <p className="text-2xl sm:text-3xl font-black text-white truncate tracking-tight">
+                                <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest mb-1">Toplam Değer</p>
+                                <p className="text-2xl sm:text-3xl font-black text-zinc-900 dark:text-white truncate tracking-tight">
                                     {isBlurred ? '₺***,**' : `₺${totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                 </p>
                             </div>
@@ -278,10 +278,10 @@ const AssetsPage: React.FC = () => {
                             </div>
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5 mb-1">
-                                    <p className="text-[10px] sm:text-xs text-zinc-500 font-bold uppercase tracking-widest">Toplam Kar/Zarar</p>
+                                    <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-widest">Toplam Kar/Zarar</p>
                                     <div className="group relative">
-                                        <Info className="w-3 h-3 text-zinc-500 cursor-help" />
-                                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-800 border border-white/10 rounded-lg text-xs text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+                                        <Info className="w-3 h-3 text-zinc-500 dark:text-zinc-400 cursor-help" />
+                                        <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-white/10 rounded-lg text-xs text-zinc-700 dark:text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
                                             Tahmini rakamlar.
                                         </div>
                                     </div>
@@ -300,16 +300,16 @@ const AssetsPage: React.FC = () => {
 
             {/* Chart Section */}
             {!isLoading && rawChartData.length > 1 && (
-                <div className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[350px] sm:h-[400px] w-full shadow-2xl">
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden h-[350px] sm:h-[400px] w-full shadow-2xl">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                             <TrendingUp className="hidden sm:block w-5 h-5 text-amber-500" /> Zaman İçinde Portföy Gelişimi
                         </h2>
-                        <div className="flex items-center gap-1 p-1 bg-zinc-950 border border-white/5 rounded-xl self-end sm:self-auto">
-                            <button onClick={() => setChartFilter('1w')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1w' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1H</button>
-                            <button onClick={() => setChartFilter('1m')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1m' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1A</button>
-                            <button onClick={() => setChartFilter('1y')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1y' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>1Y</button>
-                            <button onClick={() => setChartFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === 'all' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 hover:text-white'}`}>Tümü</button>
+                        <div className="flex items-center gap-1 p-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-white/5 rounded-xl self-end sm:self-auto">
+                            <button onClick={() => setChartFilter('1w')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1w' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white'}`}>1H</button>
+                            <button onClick={() => setChartFilter('1m')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1m' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white'}`}>1A</button>
+                            <button onClick={() => setChartFilter('1y')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === '1y' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white'}`}>1Y</button>
+                            <button onClick={() => setChartFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${chartFilter === 'all' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white'}`}>Tümü</button>
                         </div>
                     </div>
                     <div className="w-full h-full pb-8">
@@ -341,18 +341,18 @@ const AssetsPage: React.FC = () => {
             )}
 
             {/* SECTION 2: Varlık Detayları */}
-            <section className="bg-zinc-900 border border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden">
+            <section className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 overflow-hidden">
                 <div className="flex items-center gap-2 mb-6">
                     <div className="hidden sm:block p-2 bg-amber-500/10 rounded-lg text-amber-500">
                         <Coins size={20} />
                     </div>
-                    <h2 className="text-xl font-bold text-white">Varlık Detayları</h2>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Varlık Detayları</h2>
                 </div>
 
                 {isLoading ? (
                     <div className="py-20 text-center">
                         <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto mb-4" />
-                        <p className="text-zinc-400">Yükleniyor...</p>
+                        <p className="text-zinc-600 dark:text-zinc-400">Yükleniyor...</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -371,27 +371,27 @@ const AssetsPage: React.FC = () => {
                                     );
 
                                     return (
-                                        <div key={item.currencyId} className="bg-zinc-800/40 border border-white/5 rounded-xl transition-all overflow-hidden shadow-sm">
+                                        <div key={item.currencyId} className="bg-zinc-800/40 border border-zinc-200 dark:border-white/5 rounded-xl transition-all overflow-hidden shadow-sm">
                                             {/* Summary Header (Clickable) */}
                                             <div
-                                                className="p-5 flex flex-col gap-5 cursor-pointer hover:bg-white/5 transition-colors"
+                                                className="p-5 flex flex-col gap-5 cursor-pointer hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
                                                 onClick={() => toggleExpanded(item.currencyId)}
                                             >
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center border border-white/5 shadow-inner">
-                                                            <span className="text-base font-black text-zinc-400">
+                                                        <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-white/5 shadow-inner">
+                                                            <span className="text-base font-black text-zinc-600 dark:text-zinc-400">
                                                                 {currency.code?.substring(0, 1)}
                                                             </span>
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                <h3 className="font-black text-lg text-white tracking-tight">
+                                                                <h3 className="font-black text-lg text-zinc-900 dark:text-white tracking-tight">
                                                                     {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
                                                                 </h3>
                                                                 {historyAssets.length > 0 && (
-                                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} p-1 bg-white/5 rounded-full`}>
-                                                                        <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                                                                    <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} p-1 bg-zinc-100 dark:bg-white/5 rounded-full`}>
+                                                                        <ChevronDown className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -402,25 +402,25 @@ const AssetsPage: React.FC = () => {
 
                                                 <div className="grid grid-cols-2 gap-y-5 gap-x-4">
                                                     <div>
-                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Miktar</p>
-                                                        <p className="text-white text-base font-bold">
-                                                            {isBlurred ? '***,**' : amount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
+                                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-1">Toplam Miktar</p>
+                                                        <p className="text-zinc-900 dark:text-white text-base font-bold">
+                                                            {isBlurred ? '***,**' : amount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Ort. Maliyet</p>
-                                                        <p className="text-zinc-300 text-sm font-medium">
+                                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-1">Ort. Maliyet</p>
+                                                        <p className="text-zinc-700 dark:text-zinc-300 text-sm font-medium">
                                                             {isBlurred ? '₺***,**' : `₺${averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                         </p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Toplam Değer</p>
-                                                        <p className="text-white text-base font-black">
+                                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-1">Toplam Değer</p>
+                                                        <p className="text-zinc-900 dark:text-white text-base font-black">
                                                             {isBlurred ? '₺***,**' : `₺${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Kar/Zarar</p>
+                                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider mb-1">Kar/Zarar</p>
                                                         <div className={`flex flex-col items-end ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
                                                             <span className="font-black text-sm">
                                                                 {isBlurred ? '₺***,**' : `${isProfit ? '+' : ''}₺${Math.abs(profitLoss).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
@@ -435,10 +435,10 @@ const AssetsPage: React.FC = () => {
 
                                             {/* Expanded History - Improved UI */}
                                             {isExpanded && historyAssets.length > 0 && (
-                                                <div className="bg-zinc-950/30 border-t border-white/5 p-5 space-y-4">
+                                                <div className="bg-zinc-950/30 border-t border-zinc-200 dark:border-white/5 p-5 space-y-4">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <History className="w-3.5 h-3.5 text-amber-500" />
-                                                        <p className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Alım Geçmişi</p>
+                                                        <p className="text-[10px] uppercase font-bold text-zinc-500 dark:text-zinc-400 tracking-wider">Alım Geçmişi</p>
                                                     </div>
                                                     {historyAssets.map(asset => {
                                                         const assetAmount = parseFloat(asset.amount);
@@ -450,7 +450,7 @@ const AssetsPage: React.FC = () => {
                                                         const isAssetProfit = assetPL >= 0;
 
                                                         return (
-                                                            <div key={asset.id} className="relative bg-zinc-900 border border-white/5 rounded-2xl p-5 overflow-hidden group hover:border-amber-500/20 transition-all shadow-lg shadow-black/20">
+                                                            <div key={asset.id} className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-2xl p-5 overflow-hidden group hover:border-amber-500/20 transition-all shadow-lg shadow-black/20">
                                                                 <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none">
                                                                     <Coins className="w-20 h-20" />
                                                                 </div>
@@ -460,9 +460,9 @@ const AssetsPage: React.FC = () => {
                                                                     <div className="flex justify-between items-start">
                                                                         <div className="flex flex-col">
                                                                             {asset.place && (
-                                                                                <span className="text-sm font-bold text-white mb-0.5">{asset.place}</span>
+                                                                                <span className="text-sm font-bold text-zinc-900 dark:text-white mb-0.5">{asset.place}</span>
                                                                             )}
-                                                                            <span className="text-xs text-zinc-500 font-medium">
+                                                                            <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">
                                                                                 {formatDate(asset.date, dateFormat)}
                                                                             </span>
                                                                         </div>
@@ -472,7 +472,7 @@ const AssetsPage: React.FC = () => {
                                                                             </div>
                                                                             <button
                                                                                 onClick={(e) => handleDeleteClick(asset, e)}
-                                                                                className="p-2 -mr-2 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                                                className="p-2 -mr-2 text-zinc-500 dark:text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                                                                             >
                                                                                 <Trash2 className="w-4 h-4" />
                                                                             </button>
@@ -480,27 +480,27 @@ const AssetsPage: React.FC = () => {
                                                                     </div>
 
                                                                     {/* Details Grid */}
-                                                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                                                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-200 dark:border-white/5">
                                                                         <div>
-                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Miktar</p>
-                                                                            <p className="text-sm font-bold text-white">
-                                                                                {isBlurred ? '***,**' : assetAmount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
+                                                                            <p className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold mb-1">Miktar</p>
+                                                                            <p className="text-sm font-bold text-zinc-900 dark:text-white">
+                                                                                {isBlurred ? '***,**' : assetAmount.toLocaleString('tr-TR')} <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">{getAssetUnit(currency.code, currency.name)}</span>
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">
-                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Birim Fiyat</p>
-                                                                            <p className="text-sm font-medium text-zinc-400">{isBlurred ? '₺***,**' : `₺${assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}</p>
+                                                                            <p className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold mb-1">Birim Fiyat</p>
+                                                                            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{isBlurred ? '₺***,**' : `₺${assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}</p>
                                                                         </div>
 
                                                                         <div>
-                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Toplam Maliyet</p>
-                                                                            <p className="text-sm font-bold text-zinc-300">
+                                                                            <p className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold mb-1">Toplam Maliyet</p>
+                                                                            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
                                                                                 {isBlurred ? '₺***,**' : `₺${assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">
-                                                                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold mb-1">Güncel Değer</p>
-                                                                            <p className="text-sm font-bold text-white">
+                                                                            <p className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold mb-1">Güncel Değer</p>
+                                                                            <p className="text-sm font-bold text-zinc-900 dark:text-white">
                                                                                 {isBlurred ? '₺***,**' : `₺${assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`}
                                                                             </p>
                                                                         </div>
@@ -520,7 +520,7 @@ const AssetsPage: React.FC = () => {
                             <div className="hidden lg:block overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-white/5 text-xs font-black uppercase tracking-widest text-zinc-500">
+                                        <tr className="border-b border-zinc-200 dark:border-white/5 text-xs font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
                                             <th className="px-4 py-4 w-12"></th>
                                             <th className="px-4 py-4">Varlık</th>
                                             <th className="px-4 py-4">Değerlendirme</th>
@@ -531,7 +531,7 @@ const AssetsPage: React.FC = () => {
                                             <th className="px-4 py-4 text-right">K/Z</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
+                                    <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
                                         {portfolioItems.map((item) => {
                                             const { currency, amount, averageCost, currentValue, profitLoss, profitLossPercent, places } = item;
                                             if (!currency) return null;
@@ -547,52 +547,52 @@ const AssetsPage: React.FC = () => {
                                                 <React.Fragment key={item.currencyId}>
                                                     {/* Parent Row */}
                                                     <tr
-                                                        className={`transition-colors group cursor-pointer ${isExpanded ? 'bg-white/5' : 'hover:bg-white/5'}`}
+                                                        className={`transition-colors group cursor-pointer ${isExpanded ? 'bg-zinc-100 dark:bg-white/5' : 'hover:bg-zinc-100 dark:hover:bg-white/5'}`}
                                                         onClick={() => toggleExpanded(item.currencyId)}
                                                     >
-                                                        <td className="px-4 py-4 text-zinc-500">
+                                                        <td className="px-4 py-4 text-zinc-500 dark:text-zinc-400">
                                                             {historyAssets.length > 0 && (
-                                                                <div className={`transition-transform duration-300 w-6 h-6 flex items-center justify-center rounded-full bg-white/5 ${isExpanded ? 'rotate-180 bg-white/10' : ''}`}>
+                                                                <div className={`transition-transform duration-300 w-6 h-6 flex items-center justify-center rounded-full bg-zinc-100 dark:bg-white/5 ${isExpanded ? 'rotate-180 bg-white/10' : ''}`}>
                                                                     <ChevronDown className="w-4 h-4" />
                                                                 </div>
                                                             )}
                                                         </td>
                                                         <td className="px-4 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
-                                                                    <span className="text-xs font-bold text-zinc-400 group-hover:text-amber-500">
+                                                                <div className="w-9 h-9 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-white/5 group-hover:border-amber-500/30 group-hover:bg-amber-500/10 transition-all">
+                                                                    <span className="text-xs font-bold text-zinc-600 dark:text-zinc-400 group-hover:text-amber-500">
                                                                         {currency.code?.substring(0, 1)}
                                                                     </span>
                                                                 </div>
-                                                                <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                                                                <span className="font-bold text-sm text-zinc-900 dark:text-white group-hover:text-amber-400 transition-colors">
                                                                     {(currency.type === 'Altın' || currency.type === 'Gold') ? currency.name : currency.code}
                                                                 </span>
                                                             </div>
                                                         </td>
                                                         <td className="px-4 py-4">
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm font-bold text-zinc-300">{places.size > 1 ? `${places.size} Farklı Konum` : (Array.from(places)[0] || '-')}</span>
-                                                                <span className="text-[10px] text-zinc-500 font-medium bg-white/5 px-2 py-0.5 rounded w-fit mt-1">ÖZET</span>
+                                                                <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">{places.size > 1 ? `${places.size} Farklı Konum` : (Array.from(places)[0] || '-')}</span>
+                                                                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium bg-zinc-100 dark:bg-white/5 px-2 py-0.5 rounded w-fit mt-1">ÖZET</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-4 py-4 text-center">
-                                                            <span className="text-sm font-bold text-white">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white">
                                                                 {isBlurred ? '***,**' : amount.toLocaleString('tr-TR')}
-                                                                <span className="text-xs font-normal text-zinc-500 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
+                                                                <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400 ml-1">{getAssetUnit(currency.code, currency.name)}</span>
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
-                                                            <span className="text-sm font-medium text-zinc-400">
+                                                            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
                                                                 {isBlurred ? '₺***,**' : `₺${averageCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
-                                                            <span className="text-sm font-bold text-white">
+                                                            <span className="text-sm font-bold text-zinc-900 dark:text-white">
                                                                 ₺{currentPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                             </span>
                                                         </td>
                                                         <td className="px-4 py-4 text-right">
-                                                            <span className="text-sm font-black text-white">
+                                                            <span className="text-sm font-black text-zinc-900 dark:text-white">
                                                                 {isBlurred ? '₺***,**' : `₺${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                             </span>
                                                         </td>
@@ -619,30 +619,30 @@ const AssetsPage: React.FC = () => {
                                                         const isAssetProfit = assetPL >= 0;
 
                                                         return (
-                                                            <tr key={asset.id} className="bg-zinc-900/40 hover:bg-zinc-900/60 transition-colors">
+                                                            <tr key={asset.id} className="bg-white/40 dark:bg-zinc-900/40 hover:bg-zinc-900/60 transition-colors">
                                                                 <td className="px-4 py-3 border-l-2 border-amber-500/20"></td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="pl-4 flex flex-col">
-                                                                        <span className="text-xs text-zinc-400">Alım İşlemi</span>
+                                                                        <span className="text-xs text-zinc-600 dark:text-zinc-400">Alım İşlemi</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3">
                                                                     <div className="flex flex-col">
-                                                                        {asset.place && <span className="text-sm font-medium text-zinc-300">{asset.place}</span>}
-                                                                        <span className="text-xs text-zinc-500">{formatDate(asset.date, dateFormat)}</span>
+                                                                        {asset.place && <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{asset.place}</span>}
+                                                                        <span className="text-xs text-zinc-500 dark:text-zinc-400">{formatDate(asset.date, dateFormat)}</span>
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-center">
-                                                                    <span className="text-sm text-zinc-300">
+                                                                    <span className="text-sm text-zinc-700 dark:text-zinc-300">
                                                                         {isBlurred ? '***,**' : assetAmount.toLocaleString('tr-TR')}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
                                                                     <div className="flex flex-col items-end">
-                                                                        <span className="text-sm font-bold text-zinc-300">
+                                                                        <span className="text-sm font-bold text-zinc-700 dark:text-zinc-300">
                                                                             {isBlurred ? '₺***,**' : `₺${assetCost.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </span>
-                                                                        <span className="text-[10px] text-zinc-500">
+                                                                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
                                                                             {isBlurred ? '@₺***,**' : `@₺${assetPrice.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                         </span>
                                                                     </div>
@@ -651,7 +651,7 @@ const AssetsPage: React.FC = () => {
                                                                     <div className="flex justify-end">
                                                                         <button
                                                                             onClick={(e) => handleDeleteClick(asset, e)}
-                                                                            className="p-1.5 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                                                                            className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                                                                             title="Varlığı Sil"
                                                                         >
                                                                             <Trash2 className="w-4 h-4" />
@@ -659,7 +659,7 @@ const AssetsPage: React.FC = () => {
                                                                     </div>
                                                                 </td>
                                                                 <td className="px-4 py-3 text-right">
-                                                                    <span className="text-sm font-medium text-zinc-300">
+                                                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                                                         {isBlurred ? '₺***,**' : `₺${assetValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                                                                     </span>
                                                                 </td>
@@ -684,12 +684,12 @@ const AssetsPage: React.FC = () => {
                             </div>
 
                             {portfolioItems.length === 0 && (
-                                <div className="py-12 text-center text-zinc-500">
+                                <div className="py-12 text-center text-zinc-500 dark:text-zinc-400">
                                     <div className="flex flex-col items-center gap-3">
                                         <Wallet className="w-10 h-10 opacity-20" />
                                         <p>Henüz bir varlık eklememişsiniz.</p>
                                         <Button
-                                            className="bg-zinc-800 hover:bg-zinc-700 h-9 text-xs"
+                                            className="bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-700 h-9 text-xs"
                                             onClick={() => navigate(PATHS.TRANSACTIONS)}
                                         >
                                             İşlemlere Git
@@ -703,8 +703,8 @@ const AssetsPage: React.FC = () => {
             </section>
 
             {isSecurityModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-zinc-950/90 backdrop-blur-md">
-                    <div className="w-full max-w-md bg-zinc-900 border-t lg:border border-white/10 rounded-t-2xl sm:rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 lg:p-10 overflow-hidden relative">
+                <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center p-0 lg:p-6 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md">
+                    <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-t lg:border border-zinc-300 dark:border-white/10 rounded-t-2xl sm:rounded-t-[2.5rem] lg:rounded-[2.5rem] shadow-2xl p-6 sm:p-8 lg:p-10 overflow-hidden relative">
                         <div className="text-center relative z-10">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500/10 border border-amber-500/20 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-6 sm:mb-8 shadow-xl shadow-amber-500/5">
                                 <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-amber-500" />
@@ -726,7 +726,7 @@ const AssetsPage: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => navigate(PATHS.DASHBOARD)}
-                                        className="text-xs font-bold text-zinc-500 hover:text-white transition-all uppercase tracking-widest py-2"
+                                        className="text-xs font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white transition-all uppercase tracking-widest py-2"
                                     >
                                         Geri Dön
                                     </button>
@@ -738,16 +738,16 @@ const AssetsPage: React.FC = () => {
             )}
 
             {isDeleteModalOpen && assetToDelete && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-zinc-950/90 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="w-full max-w-sm bg-zinc-900 border border-white/10 rounded-3xl shadow-2xl p-6 relative overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-3xl shadow-2xl p-6 relative overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-10 duration-300">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
                         <div className="text-center">
                             <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-red-500/20 shadow-lg shadow-red-500/5">
                                 <Trash2 className="w-8 h-8 text-red-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Varlığı Sil</h3>
-                            <p className="text-zinc-400 text-sm mb-6">
-                                <span className="text-white font-bold">{assetToDelete.amount} {getAssetUnit(assetToDelete.currency?.code || '', assetToDelete.currency?.name || '')} </span>
+                            <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Varlığı Sil</h3>
+                            <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-6">
+                                <span className="text-zinc-900 dark:text-white font-bold">{assetToDelete.amount} {getAssetUnit(assetToDelete.currency?.code || '', assetToDelete.currency?.name || '')} </span>
                                 tutarındaki varlık kaydını silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
                             </p>
                             <div className="grid grid-cols-2 gap-3">

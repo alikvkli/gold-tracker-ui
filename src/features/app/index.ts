@@ -10,6 +10,7 @@ const initialState: InitialStateProps = {
     encryptionKey: null,
     dateFormat: 'standard',
     favoriteUnits: [],
+    theme: 'dark',
 }
 
 const appSlice = createSlice({
@@ -44,6 +45,9 @@ const appSlice = createSlice({
                 state.favoriteUnits.push(action.payload);
             }
         },
+        setTheme: (state, action: PayloadAction<'dark' | 'light'>) => {
+            state.theme = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(REHYDRATE, (state, action: any) => {
@@ -57,6 +61,7 @@ const appSlice = createSlice({
                     state.encryptionKey = persistedState.encryptionKey || null;
                     state.dateFormat = persistedState.dateFormat || 'standard';
                     state.favoriteUnits = persistedState.favoriteUnits || [];
+                    state.theme = persistedState.theme || 'dark';
                 }
             }
         });
@@ -69,6 +74,7 @@ export const {
     setEncryptionKey,
     setDateFormat,
     toggleFavoriteUnit,
+    setTheme,
 } = appSlice.actions;
 
 export default appSlice.reducer;

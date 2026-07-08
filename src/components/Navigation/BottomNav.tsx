@@ -20,7 +20,7 @@ const BottomNav: React.FC = () => {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-zinc-900/80 backdrop-blur-xl border-t border-white/5 px-6 pt-3 pb-8 z-40">
+        <nav className="fixed bottom-0 left-0 right-0 lg:hidden bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-t border-zinc-200 dark:border-white/5 px-6 pt-3 pb-8 z-40">
             <div className="flex justify-between items-center max-w-lg mx-auto">
                 {navItems.map((item) => {
                     const isActive = location.pathname === item.path;
@@ -33,11 +33,11 @@ const BottomNav: React.FC = () => {
                         >
                             <div className={`p-2 rounded-xl transition-all ${isActive
                                 ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                : 'text-zinc-500'
+                                : 'text-zinc-500 dark:text-zinc-400'
                                 }`}>
                                 <Icon className="w-6 h-6" />
                             </div>
-                            <span className={`text-[10px] font-bold tracking-tight uppercase ${isActive ? 'text-amber-500' : 'text-zinc-500'
+                            <span className={`text-[10px] font-bold tracking-tight uppercase ${isActive ? 'text-amber-500' : 'text-zinc-500 dark:text-zinc-400'
                                 }`}>
                                 {item.label}
                             </span>

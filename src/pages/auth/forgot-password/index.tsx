@@ -34,13 +34,13 @@ const ForgotPasswordPage: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full"></div>
 
             <div className="w-full max-w-md relative z-10">
                 <button
                     onClick={() => navigate(PATHS.LOGIN)}
-                    className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-8 group"
+                    className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white transition-colors mb-8 group"
                 >
                     <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     Giriş Sayfasına Dön
@@ -51,10 +51,10 @@ const ForgotPasswordPage: React.FC = () => {
                         <Lock className="w-8 h-8" />
                     </div>
                     <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-100 to-amber-500 mb-2">Şifremi Unuttum</h1>
-                    <p className="text-zinc-500">E-posta adresinizi girin, şifrenizi sıfırlamanız için kod gönderelim.</p>
+                    <p className="text-zinc-500 dark:text-zinc-400">E-posta adresinizi girin, şifrenizi sıfırlamanız için kod gönderelim.</p>
                 </div>
 
-                <div className="bg-zinc-900/50 border border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
+                <div className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
 
                     <form className="flex flex-col gap-6" onSubmit={formik.handleSubmit}>
                         <Input

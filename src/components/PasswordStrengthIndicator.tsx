@@ -41,14 +41,14 @@ const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ p
                         key={level}
                         className={classNames(
                             "h-full flex-1 rounded-full transition-all duration-300",
-                            level <= strength ? getStrengthColor() : "bg-zinc-800"
+                            level <= strength ? getStrengthColor() : "bg-zinc-100 dark:bg-zinc-800"
                         )}
                     />
                 ))}
             </div>
             <div className="flex justify-end">
                 <span className={classNames("text-xs font-medium transition-colors duration-300",
-                    strength === 0 ? "text-zinc-500" :
+                    strength === 0 ? "text-zinc-500 dark:text-zinc-400" :
                         strength <= 2 ? "text-red-400" :
                             strength <= 4 ? "text-yellow-400" :
                                 "text-green-400"

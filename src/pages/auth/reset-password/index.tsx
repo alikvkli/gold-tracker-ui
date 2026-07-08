@@ -41,13 +41,13 @@ const ResetPasswordPage: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full"></div>
 
             <div className="w-full max-w-md relative z-10">
                 <button
                     onClick={() => navigate(PATHS.LOGIN)}
-                    className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors mb-8 group"
+                    className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white transition-colors mb-8 group"
                 >
                     <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     Giriş Sayfasına Dön
@@ -58,10 +58,10 @@ const ResetPasswordPage: React.FC = () => {
                         <KeyRound className="w-8 h-8" />
                     </div>
                     <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-100 to-amber-500 mb-2">Şifre Sıfırla</h1>
-                    <p className="text-zinc-500">E-posta ile gelen 5 haneli kodu ve yeni şifrenizi girin.</p>
+                    <p className="text-zinc-500 dark:text-zinc-400">E-posta ile gelen 5 haneli kodu ve yeni şifrenizi girin.</p>
                 </div>
 
-                <div className="bg-zinc-900/50 border border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
+                <div className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
 
                     <form className="flex flex-col gap-5" onSubmit={formik.handleSubmit}>
                         <Input

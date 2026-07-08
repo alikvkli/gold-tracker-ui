@@ -6,6 +6,7 @@ import { persistor, store } from './store';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 import ToastContainer from './components/Toast/ToastContainer';
+import { ThemeProvider } from './components/ThemeProvider';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
@@ -13,7 +14,9 @@ const root = ReactDOM.createRoot(document.getElementById('root')!);
 root!.render(
   <Provider store={store}>
     <PersistGate persistor={persistor} loading={null}>
-      <RouterProvider router={router} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
       <ToastContainer />
     </PersistGate>
   </Provider>

@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
     });
 
     return (
-        <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center p-6 relative overflow-hidden">
             {/* Background Ornaments */}
             <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full"></div>
             <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-amber-900/10 blur-[120px] rounded-full"></div>
@@ -57,10 +57,10 @@ const LoginPage: React.FC = () => {
                         <Coins className="w-8 h-8" />
                     </div>
                     <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-100 to-amber-500 mb-2">Hoş Geldiniz</h1>
-                    <p className="text-zinc-500">Yatırımlarınızı takip etmek için giriş yapın.</p>
+                    <p className="text-zinc-500 dark:text-zinc-400">Yatırımlarınızı takip etmek için giriş yapın.</p>
                 </div>
 
-                <div className="bg-zinc-900/50 border border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
+                <div className="bg-white/50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 rounded-[2rem] p-8 backdrop-blur-xl shadow-2xl">
                     {status && (
                         <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-medium ${status.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20'
                             }`}>
@@ -111,8 +111,8 @@ const LoginPage: React.FC = () => {
                         </Button>
                     </form>
 
-                    <div className="mt-8 pt-8 border-t border-white/5 text-center">
-                        <p className="text-sm text-zinc-500">
+                    <div className="mt-8 pt-8 border-t border-zinc-200 dark:border-white/5 text-center">
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             Hesabınız yok mu?{' '}
                             <button
                                 type="button"

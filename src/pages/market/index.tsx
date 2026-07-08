@@ -76,7 +76,7 @@ export default function PublicMarketPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500/30 selection:text-amber-200">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans selection:bg-amber-500/30 selection:text-amber-200">
             {/* Background Ornaments */}
             <div className="fixed inset-0 pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-amber-600/10 blur-[120px] rounded-full"></div>
@@ -84,9 +84,9 @@ export default function PublicMarketPage() {
             </div>
 
             {/* Header */}
-            <nav className="sticky top-0 w-full z-50 bg-zinc-950/80 backdrop-blur-md border-b border-white/5">
+            <nav className="sticky top-0 w-full z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-white/5">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                    <Link to={PATHS.HOME} className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                    <Link to={PATHS.HOME} className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-white transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                         <span className="font-medium">Ana Sayfa</span>
                     </Link>
@@ -101,15 +101,15 @@ export default function PublicMarketPage() {
                 {/* Hero / Title Section */}
                 <div className="text-center mb-10">
                     <h1 className="text-3xl sm:text-4xl font-black mb-4 tracking-tight">Güncel Piyasa Verileri</h1>
-                    <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+                    <p className="text-zinc-600 dark:text-zinc-400 text-lg max-w-2xl mx-auto">
                         Altın, döviz ve emtia piyasalarındaki anlık değişimleri profesyonel araçlarla takip edin.
                     </p>
                 </div>
 
                 {/* Controls Area */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-zinc-900/50 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-white/50 dark:bg-zinc-900/50 p-4 rounded-2xl border border-zinc-200 dark:border-white/5 backdrop-blur-sm">
                     {/* Tabs */}
-                    <div className="flex p-1 bg-zinc-900 rounded-xl border border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
+                    <div className="flex p-1 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-white/5 w-full md:w-auto overflow-x-auto no-scrollbar">
                         {categories.map((cat) => {
                             const Icon = cat.icon;
                             const isActive = activeCategory === cat.id;
@@ -119,7 +119,7 @@ export default function PublicMarketPage() {
                                     onClick={() => setActiveCategory(cat.id as Category)}
                                     className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${isActive
                                         ? 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20'
-                                        : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                                        : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     <Icon className="w-4 h-4" />
@@ -131,13 +131,13 @@ export default function PublicMarketPage() {
 
                     {/* Search */}
                     <div className="relative w-full md:w-72 group">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 dark:text-zinc-400 group-focus-within:text-amber-500 transition-colors" />
                         <input
                             type="text"
                             placeholder="Varlık ara..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all text-sm placeholder:text-zinc-600"
+                            className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 transition-all text-sm placeholder:text-zinc-600"
                         />
                     </div>
                 </div>
@@ -145,14 +145,14 @@ export default function PublicMarketPage() {
                 {isLoading ? (
                     <div className="py-24 flex flex-col items-center justify-center gap-4">
                         <Loader2 className="w-10 h-10 text-amber-500 animate-spin" />
-                        <p className="text-zinc-500 font-medium animate-pulse">Veriler yükleniyor...</p>
+                        <p className="text-zinc-500 dark:text-zinc-400 font-medium animate-pulse">Veriler yükleniyor...</p>
                     </div>
                 ) : (
-                    <div className="bg-zinc-900/40 border border-white/5 rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl">
+                    <div className="bg-white/40 dark:bg-zinc-900/40 border border-zinc-200 dark:border-white/5 rounded-3xl overflow-hidden backdrop-blur-md shadow-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 bg-white/5">
+                                    <tr className="border-b border-zinc-200 dark:border-white/5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-white/5">
                                         <th className="px-3 py-3 sm:px-6 sm:py-5">Varlık</th>
                                         <th className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12"></th>
                                         <th className="hidden sm:table-cell px-6 py-5 text-center">Türü</th>
@@ -161,33 +161,33 @@ export default function PublicMarketPage() {
                                         <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-5 text-right">Değişim</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-white/5">
+                                <tbody className="divide-y divide-zinc-200 dark:divide-white/5">
                                     {filteredData.map((currency) => {
                                         const isPositive = currency.change.includes('%') ? !currency.change.includes('-') : parseFloat(currency.change) >= 0;
                                         const isGold = currency.type === 'Altın' || currency.type === 'Gold' || currency.name.includes('altin');
 
                                         return (
-                                            <tr key={currency.name} className="group hover:bg-white/5 transition-colors">
+                                            <tr key={currency.name} className="group hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
                                                 <td className="px-3 py-3 sm:px-6 sm:py-5">
                                                     <div className="flex items-center gap-2 sm:gap-4">
                                                         <div className={`hidden sm:flex w-12 h-12 rounded-2xl items-center justify-center border transition-all duration-300 group-hover:scale-105 ${isGold
                                                             ? 'bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5'
-                                                            : 'bg-zinc-800 border-white/5 text-zinc-400'
+                                                            : 'bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-white/5 text-zinc-600 dark:text-zinc-400'
                                                             }`}>
                                                             {isGold ? <Coins className="w-6 h-6" /> : <span className="text-lg font-black">{currency.name.substring(0, 1).toUpperCase()}</span>}
                                                         </div>
                                                         <div>
-                                                            <div className="font-bold text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
+                                                            <div className="font-bold text-zinc-900 dark:text-white text-xs sm:text-base group-hover:text-amber-400 transition-colors uppercase tracking-tight">
                                                                 {currency.name.replace(/-/g, ' ')}
                                                             </div>
-                                                            <div className="hidden sm:block text-xs text-zinc-500 font-medium">Canlı Veri</div>
+                                                            <div className="hidden sm:block text-xs text-zinc-500 dark:text-zinc-400 font-medium">Canlı Veri</div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3 sm:px-6 sm:py-5 text-center w-12">
                                                     <button 
                                                         onClick={() => dispatch(toggleFavoriteUnit(currency.name))}
-                                                        className={`p-2 rounded-full transition-colors ${favoriteUnits.includes(currency.name) ? 'text-amber-500 bg-amber-500/10' : 'text-zinc-600 hover:text-amber-500 hover:bg-zinc-800'}`}
+                                                        className={`p-2 rounded-full transition-colors ${favoriteUnits.includes(currency.name) ? 'text-amber-500 bg-amber-500/10' : 'text-zinc-600 hover:text-amber-500 hover:bg-zinc-100 dark:bg-zinc-800'}`}
                                                     >
                                                         <Star className="w-5 h-5" fill={favoriteUnits.includes(currency.name) ? "currentColor" : "none"} />
                                                     </button>
@@ -195,13 +195,13 @@ export default function PublicMarketPage() {
                                                 <td className="hidden sm:table-cell px-6 py-5 text-center">
                                                     <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${isGold
                                                         ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                                        : 'bg-zinc-800 text-zinc-400 border-white/5'
+                                                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-white/5'
                                                         }`}>
                                                         {currency.type.toUpperCase()}
                                                     </span>
                                                 </td>
                                                 <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
-                                                    <div className="text-white font-bold font-mono text-xs sm:text-base">₺{currency.buying}</div>
+                                                    <div className="text-zinc-900 dark:text-white font-bold font-mono text-xs sm:text-base">₺{currency.buying}</div>
                                                 </td>
                                                 <td className="px-3 py-3 sm:px-6 sm:py-5 text-right">
                                                     <div className="text-amber-400 font-bold font-mono text-xs sm:text-base">₺{currency.selling}</div>
@@ -222,7 +222,7 @@ export default function PublicMarketPage() {
                         </div>
 
                         {/* Footer / Stats */}
-                        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-zinc-950/30 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] sm:text-xs text-zinc-500">
+                        <div className="px-4 py-3 sm:px-6 sm:py-4 bg-zinc-950/30 border-t border-zinc-200 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                                 <span>Canlı Piyasa Verileri</span>
@@ -233,8 +233,8 @@ export default function PublicMarketPage() {
                         {filteredData.length === 0 && (
                             <div className="py-20 text-center">
                                 <Search className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
-                                <h3 className="text-white font-bold text-lg mb-1">Sonuç Bulunamadı</h3>
-                                <p className="text-zinc-500">Aradığınız kriterlere uygun varlık bulunmuyor.</p>
+                                <h3 className="text-zinc-900 dark:text-white font-bold text-lg mb-1">Sonuç Bulunamadı</h3>
+                                <p className="text-zinc-500 dark:text-zinc-400">Aradığınız kriterlere uygun varlık bulunmuyor.</p>
                             </div>
                         )}
                     </div>

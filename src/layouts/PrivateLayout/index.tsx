@@ -12,7 +12,7 @@ export default function PrivateLayout() {
     }
 
     return (
-        <div className="private-layout min-h-screen bg-zinc-950 text-white font-sans selection:bg-amber-500/30">
+        <div className="private-layout min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white font-sans selection:bg-amber-500/30">
             <Sidebar />
             <div className="content-wrapper flex flex-col min-h-screen transition-all duration-300">
                 <main className="flex-1 pb-12 pt-8 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-[1600px] mx-auto w-full">

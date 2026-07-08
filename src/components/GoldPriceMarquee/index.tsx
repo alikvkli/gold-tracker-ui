@@ -43,9 +43,9 @@ export default function GoldPriceMarquee({ className = "" }: GoldPriceMarqueePro
                     const isPositive = item.change.includes('%') ? !item.change.includes('-') : parseFloat(item.change) >= 0;
 
                     return (
-                        <div key={item.name} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors group">
+                        <div key={item.name} className="bg-zinc-100 dark:bg-white/5 border border-zinc-300 dark:border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors group">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="font-bold text-white group-hover:text-amber-400 transition-colors uppercase">
+                                <span className="font-bold text-zinc-900 dark:text-white group-hover:text-amber-400 transition-colors uppercase">
                                     {formatName(item.name)}
                                 </span>
                                 <span className={`text-xs font-mono font-bold ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
@@ -54,11 +54,11 @@ export default function GoldPriceMarquee({ className = "" }: GoldPriceMarqueePro
                             </div>
                             <div className="flex flex-col gap-1">
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-zinc-400 text-xs">Alış</span>
-                                    <span className="text-white font-medium">₺{item.buying}</span>
+                                    <span className="text-zinc-600 dark:text-zinc-400 text-xs">Alış</span>
+                                    <span className="text-zinc-900 dark:text-white font-medium">₺{item.buying}</span>
                                 </div>
                                 <div className="flex justify-between items-baseline">
-                                    <span className="text-zinc-400 text-xs">Satış</span>
+                                    <span className="text-zinc-600 dark:text-zinc-400 text-xs">Satış</span>
                                     <span className="text-amber-400 font-bold">₺{item.selling}</span>
                                 </div>
                             </div>

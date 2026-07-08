@@ -44,7 +44,7 @@ const MobileBottomNav: React.FC = () => {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-t border-white/10 sm:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-300 dark:border-white/10 sm:hidden">
             <div className="grid grid-cols-4 h-[72px]">
                 {navItems.map((item, index) => (
                     <button
@@ -52,7 +52,7 @@ const MobileBottomNav: React.FC = () => {
                         onClick={item.action}
                         className={`flex flex-col items-center justify-center gap-1.5 transition-all duration-300 relative ${item.highlight
                             ? 'text-zinc-950'
-                            : item.isActive ? 'text-amber-500' : 'text-zinc-500 hover:text-zinc-300'
+                            : item.isActive ? 'text-amber-500' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'
                             }`}
                     >
                         {item.highlight ? (

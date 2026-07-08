@@ -14,4 +14,5 @@ export interface InitialStateProps {
     encryptionKey: string | null;
     dateFormat: 'relative' | 'standard';
     favoriteUnits: string[];
+    theme: 'dark' | 'light';
 }

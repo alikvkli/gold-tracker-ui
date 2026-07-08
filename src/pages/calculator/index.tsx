@@ -62,25 +62,25 @@ const CurrencySelectModal: React.FC<CurrencySelectModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
-                <div className="p-6 border-b border-white/5">
+            <div className="absolute inset-0 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md" onClick={onClose} />
+            <div className="relative w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-zinc-200 dark:border-white/5">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-white">{title}</h3>
-                        <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
-                            <X className="w-5 h-5 text-zinc-500" />
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{title}</h3>
+                        <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-full transition-colors">
+                            <X className="w-5 h-5 text-zinc-500 dark:text-zinc-400" />
                         </button>
                     </div>
 
                     {/* Search */}
                     <div className="relative mb-4">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 dark:text-zinc-400" />
                         <input
                             type="text"
                             placeholder="Varlık ara..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-amber-500/50"
+                            className="w-full bg-black/50 border border-zinc-300 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 text-zinc-900 dark:text-white focus:outline-none focus:border-amber-500/50"
                         />
                     </div>
 
@@ -88,20 +88,20 @@ const CurrencySelectModal: React.FC<CurrencySelectModalProps> = ({
                     <div className="flex p-1 bg-black/40 rounded-xl">
                         <button
                             onClick={() => setActiveTab('all')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-lg' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'}`}
                         >
                             Tümü
                         </button>
                         <button
                             onClick={() => setActiveTab('currency')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'currency' ? 'bg-zinc-800 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'currency' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-lg' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'}`}
                         >
                             <Banknote className="w-3.5 h-3.5" />
                             Döviz
                         </button>
                         <button
                             onClick={() => setActiveTab('gold')}
-                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'gold' ? 'bg-zinc-800 text-amber-500 shadow-lg' : 'text-zinc-500 hover:text-zinc-300'}`}
+                            className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'gold' ? 'bg-zinc-100 dark:bg-zinc-800 text-amber-500 shadow-lg' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:text-zinc-300'}`}
                         >
                             <Coins className="w-3.5 h-3.5" />
                             Altın
@@ -118,28 +118,28 @@ const CurrencySelectModal: React.FC<CurrencySelectModalProps> = ({
                             <button
                                 key={c.id}
                                 onClick={() => { onSelect(c.code === 'TRY' ? 'TRY' : String(c.id)); onClose(); }}
-                                className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${isSelected ? 'bg-amber-500/10 border border-amber-500/20' : 'hover:bg-white/5 border border-transparent'}`}
+                                className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all ${isSelected ? 'bg-amber-500/10 border border-amber-500/20' : 'hover:bg-zinc-100 dark:hover:bg-white/5 border border-transparent'}`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-xs ${isSelected ? 'bg-amber-500 text-black' : 'bg-zinc-800 text-zinc-400'}`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-xs ${isSelected ? 'bg-amber-500 text-black' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                                         {cleanCode.substring(0, 3)}
                                     </div>
                                     <div className="text-left">
-                                        <div className={`font-bold ${isSelected ? 'text-amber-500' : 'text-white'}`}>
+                                        <div className={`font-bold ${isSelected ? 'text-amber-500' : 'text-zinc-900 dark:text-white'}`}>
                                             {c.code === 'TRY' ? 'Türk Lirası' : c.name}
                                         </div>
-                                        <div className="text-xs text-zinc-500 font-medium uppercase tracking-wider">{cleanCode}</div>
+                                        <div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider">{cleanCode}</div>
                                     </div>
                                 </div>
 
                                 {c.selling && (
                                     <div className="text-right">
-                                        <div className="text-sm font-mono text-zinc-300">
-                                            <span className="text-zinc-500 text-[10px] mr-2">SATIŞ</span>
+                                        <div className="text-sm font-mono text-zinc-700 dark:text-zinc-300">
+                                            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] mr-2">SATIŞ</span>
                                             ₺{parseFloat(c.selling).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
                                         {c.buying && (
-                                            <div className="text-xs font-mono text-zinc-500">
+                                            <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
                                                 <span className="text-zinc-600 text-[10px] mr-2">ALIŞ</span>
                                                 ₺{parseFloat(c.buying).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </div>
@@ -201,10 +201,10 @@ const CalculatorPage: React.FC = () => {
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                     Piyasa Verileri Canlı
                 </div>
-                <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight">
+                <h1 className="text-4xl sm:text-6xl font-black text-zinc-900 dark:text-white tracking-tight">
                     Dönüştürücü<span className="text-amber-500">.</span>
                 </h1>
-                <p className="text-zinc-500 font-medium max-w-md mx-auto text-sm sm:text-base">
+                <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-md mx-auto text-sm sm:text-base">
                     Varlıklarınız arasında hızlı ve güvenli hesaplama yapın.
                 </p>
             </div>
@@ -213,23 +213,23 @@ const CalculatorPage: React.FC = () => {
                 {/* Background Shadow Effect */}
                 <div className="absolute -inset-1 bg-gradient-to-tr from-amber-500/20 via-yellow-500/10 to-amber-500/20 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition duration-1000" />
 
-                <div className="relative bg-zinc-900 border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                    <div className="flex flex-col divide-y divide-white/5 relative">
+                <div className="relative bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
+                    <div className="flex flex-col divide-y divide-zinc-200 dark:divide-white/5 relative">
 
                         {/* INPUT: GÖNDERİLEN */}
                         <div className="p-8 sm:p-10 space-y-6">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Satılacak Varlık</span>
+                                <span className="text-xs font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Satılacak Varlık</span>
                                 <Info className="w-4 h-4 text-zinc-700" />
                             </div>
 
                             <div className="space-y-4">
                                 <button
                                     onClick={() => setModals({ ...modals, from: true })}
-                                    className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl transition-all w-full sm:w-auto overflow-hidden group/btn"
+                                    className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-3 bg-zinc-100 dark:bg-white/5 hover:bg-white/10 border border-zinc-200 dark:border-white/5 rounded-2xl transition-all w-full sm:w-auto overflow-hidden group/btn"
                                 >
-                                    <span className="text-lg sm:text-2xl font-black text-white truncate group-hover/btn:text-amber-500 transition-colors">{getDisplayCode(fromVal)}</span>
-                                    <ChevronDown className="w-5 h-5 text-zinc-500 shrink-0 group-hover/btn:text-amber-500 transition-colors" />
+                                    <span className="text-lg sm:text-2xl font-black text-zinc-900 dark:text-white truncate group-hover/btn:text-amber-500 transition-colors">{getDisplayCode(fromVal)}</span>
+                                    <ChevronDown className="w-5 h-5 text-zinc-500 dark:text-zinc-400 shrink-0 group-hover/btn:text-amber-500 transition-colors" />
                                 </button>
 
                                 <div className="space-y-1">
@@ -237,10 +237,10 @@ const CalculatorPage: React.FC = () => {
                                         type="number"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
-                                        className="w-full bg-transparent text-5xl sm:text-6xl font-black text-white focus:outline-none placeholder-zinc-800"
+                                        className="w-full bg-transparent text-5xl sm:text-6xl font-black text-zinc-900 dark:text-white focus:outline-none placeholder-zinc-800"
                                         placeholder="0"
                                     />
-                                    <div className="text-sm text-zinc-500 font-medium pl-1">
+                                    <div className="text-sm text-zinc-500 dark:text-zinc-400 font-medium pl-1">
                                         {fromVal?.name}
                                     </div>
                                 </div>
@@ -271,7 +271,7 @@ const CalculatorPage: React.FC = () => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="text-sm text-zinc-500 font-medium italic pl-1">
+                                    <div className="text-sm text-zinc-500 dark:text-zinc-400 font-medium italic pl-1">
                                         * Yaklaşık karşılığıdır
                                     </div>
                                 </div>
@@ -280,7 +280,7 @@ const CalculatorPage: React.FC = () => {
                             {/* Swap Button (Centered vertically between sections) */}
                             <button
                                 onClick={() => { setFromId(toId); setToId(fromId); }}
-                                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-zinc-800 border-4 border-zinc-900 rounded-2xl flex items-center justify-center text-white hover:text-amber-500 transition-all hover:scale-110 z-10 shadow-xl"
+                                className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-zinc-100 dark:bg-zinc-800 border-4 border-zinc-900 rounded-2xl flex items-center justify-center text-zinc-900 dark:text-white hover:text-amber-500 transition-all hover:scale-110 z-10 shadow-xl"
                             >
                                 <ArrowRightLeft className="w-6 h-6 rotate-90 transition-transform" />
                             </button>
@@ -289,8 +289,8 @@ const CalculatorPage: React.FC = () => {
 
                     {/* Footer Info */}
                     {calc && (
-                        <div className="px-8 sm:px-10 py-5 bg-white/[0.02] border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
-                            <div className="flex items-center gap-2 sm:gap-3 text-zinc-400 text-xs sm:text-sm font-bold">
+                        <div className="px-8 sm:px-10 py-5 bg-white/[0.02] border-t border-zinc-200 dark:border-white/5 flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex items-center gap-2 sm:gap-3 text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm font-bold">
                                 <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500" />
                                 1 {getDisplayCode(fromVal)} = {calc.rate.toLocaleString('tr-TR', { maximumFractionDigits: 6 })} {getDisplayCode(toVal)}
                             </div>

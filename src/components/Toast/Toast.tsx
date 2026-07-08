@@ -49,7 +49,7 @@ const Toast: React.FC<ToastType> = ({ id, message, type, duration = 5000 }) => {
             </p>
             <button
                 onClick={() => dispatch(removeToast(id))}
-                className="ml-auto p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-500 hover:text-white"
+                className="ml-auto p-1.5 hover:bg-white/10 rounded-lg transition-colors text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:text-white"
             >
                 <X className="w-4 h-4" />
             </button>

@@ -20,8 +20,8 @@ const Button: React.FC<ButtonProps> = ({
 
     const variants = {
         primary: "bg-gradient-to-r from-amber-400 to-amber-600 text-zinc-950 hover:shadow-lg hover:shadow-amber-500/20 active:scale-[0.98]",
-        secondary: "bg-white/5 text-white border border-white/10 hover:bg-white/10 active:scale-[0.98]",
-        ghost: "text-zinc-400 hover:text-white hover:bg-white/5 active:scale-[0.98]",
+        secondary: "bg-zinc-100 dark:bg-white/5 text-zinc-900 dark:text-white border border-zinc-300 dark:border-white/10 hover:bg-white/10 active:scale-[0.98]",
+        ghost: "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 active:scale-[0.98]",
         danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 active:scale-[0.98]",
         outline: "bg-transparent text-amber-500 border border-amber-500/50 hover:bg-amber-500/10 hover:border-amber-500 active:scale-[0.98]",
     };
