@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
     User as UserIcon,
-    Mail,
     Lock,
     Shield,
     ShieldAlert,

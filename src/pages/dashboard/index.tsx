@@ -52,10 +52,10 @@ const DashboardPage: React.FC = () => {
         if (!hasSetDefaultTab && !isAssetsLoading) {
             if (favoriteUnits && favoriteUnits.length > 0) {
                 setActiveTab('FAVORITES');
-            } else if (assetsRes && assetsRes.data) {
+            } else if (assetsRes && assetsRes.length > 0) {
                 let goldCount = 0;
                 let currencyCount = 0;
-                assetsRes.data.forEach((asset: any) => {
+                assetsRes.forEach((asset: any) => {
                     const isGold = asset.currency?.type === 'Altın' || asset.currency?.type === 'Gold';
                     if (isGold) goldCount++;
                     else currencyCount++;
@@ -151,7 +151,7 @@ const DashboardPage: React.FC = () => {
         });
 
         return results;
-    }, [currencies, searchTerm, activeTab]);
+    }, [currencies, searchTerm, activeTab, favoriteUnits]);
 
     // Disclaimer State
     const [isDisclaimerExpanded, setIsDisclaimerExpanded] = useState(() => {

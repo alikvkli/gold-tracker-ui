@@ -137,7 +137,7 @@ const AssetsPage: React.FC = () => {
                 Maliyet: cumulativeCost,
                 Değer: cumulativeValue,
             };
-        }).filter(Boolean);
+        }).filter((item): item is NonNullable<typeof item> => Boolean(item)) as { timestamp: number; date: string; Maliyet: number; Değer: number }[];
     }, [allAssets, currencies]);
 
     const chartData = React.useMemo(() => {
